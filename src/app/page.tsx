@@ -4,6 +4,7 @@ import { ActionIcon, Button, useComputedColorScheme, useMantineColorScheme } fro
 import { BsFillSunFill as IconSun } from "react-icons/bs";
 import { HiOutlineMoon as IconMoon } from "react-icons/hi";
 import { toast } from "react-toastify";
+import HomeBuyersPreview from "../components/HomeBuyersPreview";
 
 export default function Home() {
   const { setColorScheme, clearColorScheme } = useMantineColorScheme();
@@ -18,7 +19,7 @@ export default function Home() {
       </Title>
       <Text mb="md">Your platform for managing property leads and buyers.</Text>
       <Text>Use the navigation bar above to create a new lead or explore features.</Text>
-      
+      <HomeBuyersPreview />
     </Container>
   );
 }

@@ -4,32 +4,55 @@ function mapBHK(input?: string | null): BHK | null {
   if (!input) return null;
   const bhkMap: Record<string, BHK> = {
     "0": BHK.STUDIO,
-    "STUDIO": BHK.STUDIO,
+    STUDIO: BHK.STUDIO,
     "1": BHK.ONE,
-    "ONE": BHK.ONE,
+    ONE: BHK.ONE,
     "2": BHK.TWO,
-    "TWO": BHK.TWO,
+    TWO: BHK.TWO,
     "3": BHK.THREE,
-    "THREE": BHK.THREE,
+    THREE: BHK.THREE,
     "4": BHK.FOUR,
-    "FOUR": BHK.FOUR,
+    FOUR: BHK.FOUR,
   };
   return bhkMap[input.toUpperCase()] || null;
 }
 
 function mapTimeline(input?: string | null): Timeline {
-  if (!input) return Timeline.EXPLORING; 
+  if (!input) return Timeline.EXPLORING;
   const map: Record<string, Timeline> = {
     "0-3m": Timeline.ZERO_TO_THREE_M,
     "3-6m": Timeline.THREE_TO_SIX_M,
     "6+m": Timeline.MORE_THAN_SIX_M,
-    "exploring": Timeline.EXPLORING,
-    "ZERO_TO_THREE_M": Timeline.ZERO_TO_THREE_M,
-    "THREE_TO_SIX_M": Timeline.THREE_TO_SIX_M,
-    "MORE_THAN_SIX_M": Timeline.MORE_THAN_SIX_M,
-    "EXPLORING": Timeline.EXPLORING,
+    exploring: Timeline.EXPLORING,
+    ZERO_TO_THREE_M: Timeline.ZERO_TO_THREE_M,
+    THREE_TO_SIX_M: Timeline.THREE_TO_SIX_M,
+    MORE_THAN_SIX_M: Timeline.MORE_THAN_SIX_M,
+    EXPLORING: Timeline.EXPLORING,
   };
   return map[input.toLowerCase()] || Timeline.EXPLORING;
 }
 
-export { mapBHK, mapTimeline };
+function bhkToLabel(bhk?: BHK | null): string {
+  if (!bhk) return "";
+  const map: Record<BHK, string> = {
+    [BHK.STUDIO]: "Studio",
+    [BHK.ONE]: "1",
+    [BHK.TWO]: "2",
+    [BHK.THREE]: "3",
+    [BHK.FOUR]: "4",
+  };
+  return map[bhk] || "";
+}
+
+function timelineToLabel(timeline?: Timeline | null): string {
+  if (!timeline) return "";
+  const map: Record<Timeline, string> = {
+    [Timeline.ZERO_TO_THREE_M]: "0-3m",
+    [Timeline.THREE_TO_SIX_M]: "3-6m",
+    [Timeline.MORE_THAN_SIX_M]: ">6m",
+    [Timeline.EXPLORING]: "Exploring",
+  };
+  return map[timeline] || "";
+}
+
+export { mapBHK, mapTimeline, bhkToLabel, timelineToLabel };
