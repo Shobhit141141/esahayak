@@ -5,6 +5,7 @@ import { BsFillSunFill as IconSun } from "react-icons/bs";
 import { HiOutlineMoon as IconMoon } from "react-icons/hi";
 import { toast } from "react-toastify";
 import HomeBuyersPreview from "../components/HomeBuyersPreview";
+import HomeUsersLogin from "../components/HomeUsersLogin";
 
 export default function Home() {
   const { setColorScheme, clearColorScheme } = useMantineColorScheme();
@@ -13,13 +14,20 @@ export default function Home() {
   });
 
   return (
-    <Container size="sm" py="xl">
-      <Title order={1} mb="md">
-        Welcome to E-Sahayak
-      </Title>
-      <Text mb="md">Your platform for managing property leads and buyers.</Text>
-      <Text>Use the navigation bar above to create a new lead or explore features.</Text>
-      <HomeBuyersPreview />
+    <Container size="xl" py="xl">
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div style={{ flex: 1, minWidth: 350 }}>
+          <Title order={1} mb="md">
+            Welcome to E-Sahayak
+          </Title>
+          <Text mb="md">Your platform for managing property leads and buyers.</Text>
+          <Text>Use the navigation bar above to create a new lead or explore features.</Text>
+          <HomeBuyersPreview />
+        </div>
+        <div style={{ flex: "0 0 400px", minWidth: 300 }}>
+          <HomeUsersLogin />
+        </div>
+      </div>
     </Container>
   );
 }

@@ -5,6 +5,7 @@ import "./globals.css";
 import "@mantine/core/styles.css";
 import { ToastContainer } from "react-toastify";
 import Navbar from "../components/Navbar";
+import { UserProvider } from "../context/UserContext";
 
 const getRaleway = Raleway({
   subsets: ["latin"],
@@ -32,11 +33,13 @@ export default function RootLayout({
         <ColorSchemeScript />
       </head>
       <body style={{ fontFamily: getRaleway.style.fontFamily }} className="antialiased">
-        <MantineProvider theme={theme} defaultColorScheme="dark">
-          <ToastContainer theme="colored" />
-          <Navbar />
-          {children}
-        </MantineProvider>
+        <UserProvider>
+          <MantineProvider theme={theme} defaultColorScheme="dark">
+            <ToastContainer theme="colored" />
+            <Navbar />
+            {children}
+          </MantineProvider>
+        </UserProvider>
       </body>
     </html>
   );

@@ -14,13 +14,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const buyer = await prisma.buyer.create({
-      data: {
-        ...body,
-        ownerId,
-        bhk: mapBHK(body.bhk),
-        timeline: mapTimeline(body.timeline),
-        tags: body.tags || [],
-      },
+      data: body
     });
     await prisma.buyerHistory.create({
       data: {

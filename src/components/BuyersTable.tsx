@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useUser } from "../context/UserContext";
 import { Table, TextInput, Select, Button, Group, Pagination, Loader, Badge } from "@mantine/core";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, TIMELINE_OPTIONS } from "../utils/leadOptions";
@@ -145,18 +146,12 @@ export default function BuyersTable() {
     Dropped: "red",
   };
 
+  const { userId: loggedInUserId } = useUser();
   return (
     <div className="">
       <Group mb="md" gap="md" wrap="wrap" align="end">
         <TextInput label="Search" placeholder="Name, Phone, Email" value={searchValue} onChange={(e) => setSearchValue(e.target.value)} />
-        <Select
-          label="City"
-          placeholder="Select city"
-          data={CITY_OPTIONS}
-          value={filters.city}
-          onChange={(v) => setFilters((f) => ({ ...f, city: v || "" }))}
-          clearable
-        />
+        <Select label="City" placeholder="Select city" data={CITY_OPTIONS} value={filters.city} onChange={(v) => setFilters((f) => ({ ...f, city: v || "" }))} clearable />
         <Select
           label="Property Type"
           placeholder="Select property type"
@@ -181,23 +176,8 @@ export default function BuyersTable() {
           onChange={(v) => setFilters((f) => ({ ...f, timeline: v || "" }))}
           clearable
         />
-        <Select
-          label="Page Size"
-          data={[
-            { value: "5", label: "5" },
-            { value: "10", label: "10" },
-            { value: "20", label: "20" },
-            { value: "50", label: "50" },
-          ]}
-          value={String(pageSize)}
-          onChange={(v) => setPageSize(Number(v))}
-        />
-        <Button
-          onClick={() => setFilters({ city: "", propertyType: "", status: "", timeline: "", search: "" })}
-          variant="light"
-          color="red"
-          leftSection={<MdClear size={14} />}
-        >
+
+        <Button onClick={() => setFilters({ city: "", propertyType: "", status: "", timeline: "", search: "" })} variant="light" color="red" leftSection={<MdClear size={14} />}>
           Clear Filters
         </Button>
         <BuyersImportExport filters={{ ...filters, pageSize }} />
@@ -234,9 +214,9 @@ export default function BuyersTable() {
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {sortedBuyers.map((buyer: any) => (
+            {sortedBuyers.map((buyer: any, index: number) => (
               <Table.Tr key={buyer.id}>
-                <Table.Td>{buyer.id}</Table.Td>
+                <Table.Td>{index}</Table.Td>
                 <Table.Td>{buyer.fullName}</Table.Td>
                 <Table.Td>{buyer.phone}</Table.Td>
                 <Table.Td>{buyer.city}</Table.Td>
@@ -253,7 +233,7 @@ export default function BuyersTable() {
                 </Table.Td>
                 <Table.Td>{new Date(buyer.updatedAt).toLocaleString()}</Table.Td>
                 <Table.Td>
-                  <Button size="xs" variant="light" color="violet" component="a" href={`/buyers/${buyer.id}`}>
+                  <Button size="xs" variant="light" color="violet" component="a" href={`/buyers/${buyer.id}`} disabled={buyer.createdBy !== loggedInUserId}>
                     View / Edit
                   </Button>
                 </Table.Td>
@@ -262,7 +242,20 @@ export default function BuyersTable() {
           </Table.Tbody>
         </Table>
       )}
-      <Pagination value={page} onChange={setPage} total={Math.ceil(total / pageSize)} mt="md" />
+      <div className="w-full flex items-center justify-between mt-4">
+        <Pagination value={page} onChange={setPage} total={Math.ceil(total / pageSize)} mt="md" />
+        <Select
+          label="Page Size"
+          data={[
+            { value: "5", label: "5" },
+            { value: "10", label: "10" },
+            { value: "20", label: "20" },
+            { value: "50", label: "50" },
+          ]}
+          value={String(pageSize)}
+          onChange={(v) => setPageSize(Number(v))}
+        />
+      </div>
     </div>
   );
 }

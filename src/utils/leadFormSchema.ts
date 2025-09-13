@@ -6,7 +6,7 @@ export const leadFormSchema = z.object({
   phone: z.string().regex(/^\d{10,15}$/, 'Phone must be 10–15 digits'),
   city: z.string().min(1, 'City is required'),
   propertyType: z.string().min(1, 'Property type is required'),
-  bhk: z.string().optional(),
+  bhk: z.string().optional().nullable(),
   purpose: z.string().min(1, 'Purpose is required'),
   budgetMin: z.number().int().nonnegative().optional(),
   budgetMax: z.number().int().nonnegative().optional(),

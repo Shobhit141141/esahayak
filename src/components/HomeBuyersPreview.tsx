@@ -22,7 +22,9 @@ export default function HomeBuyersPreview() {
         Recent Leads
       </Title>
       {loading ? (
-        <Loader />
+       <div className="w-full h-[100px] flex items-center justify-center">
+         <Loader />
+       </div>
       ) : buyers.length === 0 ? (
         <Text>No leads found.</Text>
       ) : (

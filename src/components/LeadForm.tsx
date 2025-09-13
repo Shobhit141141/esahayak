@@ -1,14 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { TextInput, Select, NumberInput, Textarea, Button, Group, Stack, Card, Divider, Title, Text, CloseButton } from "@mantine/core";
 import { toast } from "react-toastify";
 import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, BHK_OPTIONS, PURPOSE_OPTIONS, TIMELINE_OPTIONS, SOURCE_OPTIONS } from "../utils/leadOptions";
 import { faker } from "@faker-js/faker";
 import { MdAutoFixNormal, MdClear } from "react-icons/md";
 import { leadFormSchema, LeadFormSchemaType } from "../utils/leadFormSchema";
+import { LeadFormType } from "@/types";
 
-export default function LeadForm() {
+interface LeadFormProps {
+  mode?: "create" | "edit";
+  initialData?: LeadFormSchemaType & { id?: string };
+  onSave?: (data: LeadFormSchemaType) => void;
+}
+
+export default function LeadForm({ mode = "create", initialData, onSave }: LeadFormProps) {
   const initialForm: LeadFormSchemaType = {
     fullName: "",
     email: "",
@@ -24,15 +31,19 @@ export default function LeadForm() {
     notes: "",
     tags: [],
   };
-  const [form, setForm] = useState<LeadFormSchemaType>(initialForm);
+  const [form, setForm] = useState<LeadFormSchemaType>(initialData || initialForm);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
   const [tagInput, setTagInput] = useState("");
 
-  const handleChange = (field: keyof LeadFormSchemaType, value: any) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-    setErrors((prev) => ({ ...prev, [field]: "" }));
-  };
+  const handleChange = useCallback((field: keyof LeadFormSchemaType, value: any) => {
+    setForm((prev) => {
+      if (field === "propertyType" && value !== "Apartment" && value !== "Villa") {
+        return { ...prev, [field]: value, bhk: null };
+      }
+      return { ...prev, [field]: value };
+    });
+  }, []);
 
   const validateForm = (data: LeadFormSchemaType) => {
     const result = leadFormSchema.safeParse(data);
@@ -51,20 +62,38 @@ export default function LeadForm() {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     if (!validateForm(form)) return;
+
     setLoading(true);
     try {
-      const res = await fetch("/api/buyers/new", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        toast.success("Lead created successfully!");
-        setForm(initialForm);
-        setErrors({});
+      if (mode === "create") {
+        const res = await fetch("/api/buyers/new", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          toast.success("Lead created successfully!");
+          setForm(initialForm);
+          setErrors({});
+          if (onSave) onSave(form);
+        } else {
+          toast.error(data.error || "Failed to create lead");
+        }
       } else {
-        toast.error(data.error || "Failed to create lead");
+        const payload = { ...form, bhk: form.bhk || null };
+        const res = await fetch(`/api/buyers/${initialData?.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          toast.success("Lead updated successfully!");
+          if (onSave) onSave(form);
+        } else {
+          toast.error(data.error || "Failed to update lead");
+        }
       }
     } catch (err) {
       toast.error("Server error");
@@ -95,30 +124,85 @@ export default function LeadForm() {
     setErrors({});
   };
 
+  const handleTagKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      const value = e.currentTarget.value.trim();
+      if (e.key === " " && value) {
+        if (value && !(form.tags ?? []).includes(value)) {
+          const newTags = [...(form.tags ?? []), value];
+          if (JSON.stringify(newTags) !== JSON.stringify(form.tags)) {
+            handleChange("tags", newTags);
+          }
+        }
+
+        setTagInput("");
+        e.preventDefault();
+      }
+    },
+    [form.tags, handleChange]
+  );
+
+  const handleTagBlur = useCallback(
+    (e: React.FocusEvent<HTMLInputElement>) => {
+      const value = e.target.value.trim();
+      if (value && !(form.tags ?? []).includes(value)) {
+        const newTags = [...(form.tags ?? []), value];
+        if (JSON.stringify(newTags) !== JSON.stringify(form.tags)) {
+          handleChange("tags", newTags);
+        }
+      }
+
+      setTagInput("");
+    },
+    [form.tags, handleChange]
+  );
+
+  const removeTag = (index: number) => {
+    const newTags = (form.tags ?? []).filter((_, i) => i !== index);
+    if (JSON.stringify(newTags) !== JSON.stringify(form.tags)) {
+      handleChange("tags", newTags);
+    }
+  };
+
   const clearForm = () => {
     setForm(initialForm);
+    setErrors({});
+  };
+
+  const resetForm = () => {
+    setForm(initialData || initialForm);
     setErrors({});
   };
 
   return (
     <div className="shadow-sm p-6 rounded-md bg-transparent w-full max-w-2xl mx-auto">
       <Title order={2} mb="md">
-        Create New Lead
+        {mode === "create" ? "Create New Lead" : "Edit Lead"}
       </Title>
 
       {/* buttons for accessibility */}
       <form onSubmit={handleSubmit} className="w-full">
         <Stack gap="md">
           <div className="flex items-baseline gap-2 w-full">
-            <div className="flex flex-col items-start gap-2">
-              <Button type="button" color="blue" variant="light" onClick={autofillForm} leftSection={<MdAutoFixNormal size={16} />}>
-                Autofill with Fake Data
-              </Button>
-              <Text size="xs">For testing purposes only</Text>
-            </div>
-            <Button type="button" color="red" variant="light" leftSection={<MdClear size={16} />} onClick={clearForm}>
-              Clear Form
-            </Button>
+            {mode === "create" ? (
+              <>
+                <div className="flex flex-col items-start gap-2">
+                  <Button type="button" color="blue" variant="light" onClick={autofillForm} leftSection={<MdAutoFixNormal size={16} />}>
+                    Autofill with Fake Data
+                  </Button>
+                  <Text size="xs">For testing purposes only</Text>
+                </div>
+                <Button type="button" color="red" variant="light" leftSection={<MdClear size={16} />} onClick={clearForm}>
+                  Clear Form
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button type="button" color="blue" variant="light" onClick={resetForm} leftSection={<MdAutoFixNormal size={16} />}>
+                  Reset Form
+                </Button>
+              </>
+            )}
           </div>
           {/* lead info */}
           <div className="flex gap-4 w-full">
@@ -215,7 +299,6 @@ export default function LeadForm() {
               min={form.budgetMin || 0}
               variant="filled"
               step={50000}
-
               error={errors.budgetMax ?? ""}
             />
           </Group>
@@ -258,47 +341,27 @@ export default function LeadForm() {
             placeholder="Type tag and press space"
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
-            onKeyDown={(e) => {
-              const value = e.currentTarget.value.trim();
-              if (e.key === " " && value) {
-                if (!(form.tags ?? []).includes(value)) {
-                  handleChange("tags", [...(form.tags ?? []), value]);
-                }
-                setTagInput("");
-                e.preventDefault();
-              }
-            }}
-            onBlur={(e) => {
-              const value = e.target.value.trim();
-              if (value && !(form.tags ?? []).includes(value)) {
-                handleChange("tags", [...(form.tags ?? []), value]);
-              }
-              setTagInput("");
-            }}
+            onKeyDown={handleTagKeyDown}
+            onBlur={handleTagBlur}
             variant="filled"
           />
           {/* tags shown*/}
           <Group gap="xs" mt="0">
             {(form.tags ?? []).map((tag, idx) => (
               <Button
-                key={tag + idx}
+                key={`${tag}-${idx}`} 
                 size="xs"
                 radius="xl"
                 variant="light"
                 color="violet"
-                onClick={() =>
-                  handleChange(
-                    "tags",
-                    (form.tags ?? []).filter((_, i) => i !== idx)
-                  )
-                }
+                onClick={() => removeTag(idx)}
               >
                 {tag} <span style={{ marginLeft: 4 }}>×</span>
               </Button>
             ))}
           </Group>
           <Button type="submit" loading={loading} fullWidth mt="sm" size="md">
-            Create Lead
+            {mode === "create" ? "Create Lead" : "Update Lead"}
           </Button>
         </Stack>
       </form>

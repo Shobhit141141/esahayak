@@ -1,8 +1,9 @@
-'use client';
+"use client";
 import Link from "next/link";
 import { Group, Button } from "@mantine/core";
 import { useMantineColorScheme, useComputedColorScheme } from "@mantine/core";
 import { DarkModeSwitch } from "react-toggle-dark-mode";
+import SelectedUserDisplay from "./User";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -24,13 +25,13 @@ export default function Navbar() {
             {link.label}
           </Button>
         ))}
-       <DarkModeSwitch
-         checked={computedColorScheme === "dark"}
-         onChange={() => setColorScheme(computedColorScheme === "light" ? "dark" : "light")}
-
-         size={20}
-       
-       />
+        <SelectedUserDisplay />
+        <DarkModeSwitch
+          color={computedColorScheme === "dark" ? "light" : "dark"}
+          checked={computedColorScheme === "dark"}
+          onChange={() => setColorScheme(computedColorScheme === "light" ? "dark" : "light")}
+          size={20}
+        />
       </Group>
     </div>
   );

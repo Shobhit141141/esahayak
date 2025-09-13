@@ -1,5 +1,5 @@
 import LeadForm from "@/components/LeadForm";
 
 export default function NewBuyerPage() {
-  return <LeadForm />;
+  return <LeadForm mode="create" />;
 }

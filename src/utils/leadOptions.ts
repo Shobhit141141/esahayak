@@ -15,11 +15,11 @@ export const PROPERTY_TYPE_OPTIONS = [
 ];
 
 export const BHK_OPTIONS = [
-  { value: "Studio", label: "Studio" },
-  { value: "1", label: "1" },
-  { value: "2", label: "2" },
-  { value: "3", label: "3" },
-  { value: "4", label: "4" },
+  { value: "STUDIO", label: "Studio" },
+  { value: "ONE", label: "1" },
+  { value: "TWO", label: "2" },
+  { value: "THREE", label: "3" },
+  { value: "FOUR", label: "4" },
 ];
 
 export const PURPOSE_OPTIONS = [
@@ -28,16 +28,16 @@ export const PURPOSE_OPTIONS = [
 ];
 
 export const TIMELINE_OPTIONS = [
-  { value: "0-3m", label: "0-3 months" },
-  { value: "3-6m", label: "3-6 months" },
-  { value: ">6m", label: "More than 6 months" },
-  { value: "Exploring", label: "Exploring" },
+  { value: "ZERO_TO_THREE_M", label: "0-3 months" },
+  { value: "THREE_TO_SIX_M", label: "3-6 months" },
+  { value: "MORE_THAN_SIX_M", label: "More than 6 months" },
+  { value: "EXPLORING", label: "Exploring" },
 ];
 
 export const SOURCE_OPTIONS = [
   { value: "Website", label: "Website" },
   { value: "Referral", label: "Referral" },
-  { value: "Walk-in", label: "Walk-in" },
+  { value: "Walk_in", label: "Walk-in" },
   { value: "Call", label: "Call" },
   { value: "Other", label: "Other" },
 ];
