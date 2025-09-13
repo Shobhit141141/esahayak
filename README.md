@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Database Setup & Prisma
 
-## Getting Started
+### 1. Configure Database URL
 
-First, run the development server:
+Set your PostgreSQL connection string in `.env`:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Run Migrations & Generate Client
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Run the following command to set up the database and generate Prisma client:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+npm run db:setup
+```
 
-## Learn More
+This will:
 
-To learn more about Next.js, take a look at the following resources:
+- Run migrations (`prisma migrate dev`)
+- Generate Prisma client (`prisma generate`)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 3. Open Prisma Studio (Optional)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+To view and edit your data in a browser:
 
-## Deploy on Vercel
+```
+npm run prisma:studio
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 4. Customizing Models
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Edit your data models in `prisma/schema.prisma` and re-run `npm run db:setup` to apply changes.
+
+---
