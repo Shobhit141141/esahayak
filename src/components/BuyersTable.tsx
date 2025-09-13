@@ -1,11 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Table, TextInput, Select, Button, Group, Pagination, Loader } from "@mantine/core";
+import { Table, TextInput, Select, Button, Group, Pagination, Loader, Badge } from "@mantine/core";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, TIMELINE_OPTIONS } from "../utils/leadOptions";
 import { MdClear } from "react-icons/md";
 import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 import { bhkToLabel, timelineToLabel } from "../utils/map";
+import BuyersImportExport from "./BuyersImportExport";
 
 const STATUS_OPTIONS = [
   { value: "New", label: "New" },
@@ -134,6 +135,16 @@ export default function BuyersTable() {
     });
   };
 
+  const statusColors: Record<string, string> = {
+    New: "pink",
+    Qualified: "blue",
+    Contacted: "cyan",
+    Visited: "yellow",
+    Negotiation: "orange",
+    Converted: "green",
+    Dropped: "red",
+  };
+
   return (
     <div className="">
       <Group mb="md" gap="md" wrap="wrap" align="end">
@@ -189,6 +200,7 @@ export default function BuyersTable() {
         >
           Clear Filters
         </Button>
+        <BuyersImportExport filters={{ ...filters, pageSize }} />
       </Group>
       {loading ? (
         <div className="w-full flex justify-center items-center my-8 h-[300px]">
@@ -217,7 +229,7 @@ export default function BuyersTable() {
                   </div>
                 </Table.Th>
               ))}
-             
+
               <Table.Th>Action</Table.Th>
             </Table.Tr>
           </Table.Thead>
@@ -234,7 +246,11 @@ export default function BuyersTable() {
                   ₹ {buyer.budgetMin}–{buyer.budgetMax}
                 </Table.Td>
                 <Table.Td>{timelineToLabel(buyer.timeline)}</Table.Td>
-                <Table.Td>{buyer.status}</Table.Td>
+                <Table.Td>
+                  <Badge variant="filled" color={statusColors[buyer.status] || "red"}>
+                    {buyer.status}
+                  </Badge>
+                </Table.Td>
                 <Table.Td>{new Date(buyer.updatedAt).toLocaleString()}</Table.Td>
                 <Table.Td>
                   <Button size="xs" variant="light" color="violet" component="a" href={`/buyers/${buyer.id}`}>
