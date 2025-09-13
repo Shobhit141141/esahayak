@@ -14,6 +14,15 @@ export const leadFormSchema = z.object({
   source: z.string().min(1, 'Source is required'),
   notes: z.string().max(1000, 'Notes must be at most 1000 characters').optional(),
   tags: z.array(z.string()).optional(),
-});
+}).refine(
+  (data) =>
+    typeof data.budgetMin !== 'number' ||
+    typeof data.budgetMax !== 'number' ||
+    data.budgetMax >= data.budgetMin,
+  {
+    message: 'Budget max cannot be lower than budget min',
+    path: ['budgetMax'],
+  }
+);
 
 export type LeadFormSchemaType = z.infer<typeof leadFormSchema>;

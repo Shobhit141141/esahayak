@@ -132,7 +132,6 @@ export default function LeadForm() {
               onChange={(e) => handleChange("fullName", e.target.value)}
               variant="filled"
               error={errors.fullName ?? ""}
-              rightSection={<CloseButton aria-label="Clear input" onClick={() => handleChange("fullName", "")} style={{ display: form.fullName ? undefined : "none" }} />}
             />
             <TextInput
               label="Email"
@@ -142,7 +141,6 @@ export default function LeadForm() {
               onChange={(e) => handleChange("email", e.target.value)}
               variant="filled"
               error={errors.email ?? ""}
-              rightSection={<CloseButton aria-label="Clear input" onClick={() => handleChange("email", "")} style={{ display: form.email ? undefined : "none" }} />}
             />
           </div>
           <TextInput
@@ -153,7 +151,6 @@ export default function LeadForm() {
             onChange={(e) => handleChange("phone", e.target.value)}
             variant="filled"
             error={errors.phone ?? ""}
-            rightSection={<CloseButton aria-label="Clear input" onClick={() => handleChange("phone", "")} style={{ display: form.phone ? undefined : "none" }} />}
           />
           {/* property details */}
           <Divider label="Property Details" labelPosition="center" my="sm" />
@@ -161,7 +158,6 @@ export default function LeadForm() {
             <Select
               label="City"
               placeholder="Select city"
-              clearable
               data={CITY_OPTIONS}
               value={form.city || null}
               onChange={(v) => handleChange("city", v || "")}
@@ -172,7 +168,6 @@ export default function LeadForm() {
               label="Property Type"
               placeholder="Select type"
               data={PROPERTY_TYPE_OPTIONS}
-              clearable
               value={form.propertyType || null}
               onChange={(v) => handleChange("propertyType", v || "")}
               variant="filled"
@@ -181,7 +176,6 @@ export default function LeadForm() {
             {(form.propertyType === "Apartment" || form.propertyType === "Villa") && (
               <Select
                 label="BHK"
-                clearable
                 placeholder="Select BHK"
                 data={BHK_OPTIONS}
                 value={form.bhk || null}
@@ -197,7 +191,6 @@ export default function LeadForm() {
               label="Purpose"
               placeholder="Buy or Rent"
               data={PURPOSE_OPTIONS}
-              clearable
               value={form.purpose || null}
               onChange={(v) => handleChange("purpose", v || "")}
               variant="filled"
@@ -210,6 +203,8 @@ export default function LeadForm() {
               onChange={(v) => handleChange("budgetMin", v)}
               min={0}
               variant="filled"
+              step={50000}
+              max={form.budgetMax || undefined}
               error={errors.budgetMin ?? ""}
             />
             <NumberInput
@@ -217,8 +212,10 @@ export default function LeadForm() {
               placeholder="Max budget"
               value={form.budgetMax}
               onChange={(v) => handleChange("budgetMax", v)}
-              min={0}
+              min={form.budgetMin || 0}
               variant="filled"
+              step={50000}
+
               error={errors.budgetMax ?? ""}
             />
           </Group>
@@ -228,7 +225,6 @@ export default function LeadForm() {
               label="Timeline"
               placeholder="Select timeline"
               data={TIMELINE_OPTIONS}
-              clearable
               value={form.timeline || null}
               onChange={(v) => handleChange("timeline", v || "")}
               variant="filled"
@@ -238,7 +234,6 @@ export default function LeadForm() {
               label="Source"
               placeholder="Lead source"
               data={SOURCE_OPTIONS}
-              clearable
               value={form.source || null}
               onChange={(v) => handleChange("source", v || "")}
               variant="filled"
@@ -256,7 +251,6 @@ export default function LeadForm() {
             variant="filled"
             error={errors.notes ?? ""}
             minRows={3}
-            rightSection={<CloseButton aria-label="Clear input" onClick={() => handleChange("notes", "")} style={{ display: form.notes ? undefined : "none" }} />}
           />
           {/* tags */}
           <TextInput
