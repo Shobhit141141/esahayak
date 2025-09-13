@@ -20,11 +20,6 @@ export const metadata: Metadata = {
 
 const theme = createTheme({
   primaryColor: "violet",
-  black: "#000",
-  white: "#fff",
-  colors: {
-    dark: ["#f8f9fa", "#e9ecef", "#dee2e6", "#ced4da", "#adb5bd", "#6c757d", "#495057", "#141414", "#000000", "#000000"],
-  },
 });
 export default function RootLayout({
   children,
