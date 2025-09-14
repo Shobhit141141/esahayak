@@ -24,7 +24,7 @@ CREATE TYPE "public"."Role" AS ENUM ('ADMIN', 'AGENT');
 
 -- CreateTable
 CREATE TABLE "public"."Buyer" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "fullName" VARCHAR(80) NOT NULL,
     "email" VARCHAR(255),
     "phone" VARCHAR(15) NOT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE "public"."Buyer" (
     "status" "public"."Status" NOT NULL DEFAULT 'New',
     "notes" TEXT,
     "tags" TEXT[],
-    "ownerId" INTEGER NOT NULL,
+    "creatorId" INTEGER NOT NULL,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Buyer_pkey" PRIMARY KEY ("id")
@@ -47,8 +47,8 @@ CREATE TABLE "public"."Buyer" (
 
 -- CreateTable
 CREATE TABLE "public"."BuyerHistory" (
-    "id" TEXT NOT NULL,
-    "buyerId" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
+    "buyerId" INTEGER NOT NULL,
     "changedBy" INTEGER NOT NULL,
     "changedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "diff" JSONB NOT NULL,
@@ -72,7 +72,7 @@ CREATE TABLE "public"."User" (
 CREATE UNIQUE INDEX "User_email_key" ON "public"."User"("email");
 
 -- AddForeignKey
-ALTER TABLE "public"."Buyer" ADD CONSTRAINT "Buyer_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."Buyer" ADD CONSTRAINT "Buyer_creatorId_fkey" FOREIGN KEY ("creatorId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."BuyerHistory" ADD CONSTRAINT "BuyerHistory_buyerId_fkey" FOREIGN KEY ("buyerId") REFERENCES "public"."Buyer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

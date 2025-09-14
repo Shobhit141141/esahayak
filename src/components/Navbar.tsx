@@ -5,13 +5,15 @@ import { Button } from "@mantine/core";
 import { useMantineColorScheme, useComputedColorScheme } from "@mantine/core";
 import { DarkModeSwitch } from "react-toggle-dark-mode";
 import SelectedUserDisplay from "./User";
-import { BiHome } from "react-icons/bi";
-import { PiPlus } from "react-icons/pi";
 import { WiMoonAltFirstQuarter } from "react-icons/wi";
+import { IoPersonAddSharp } from "react-icons/io5";
+import { AiFillHome } from "react-icons/ai";
+import { FaPeopleGroup } from "react-icons/fa6";
 
 const navLinks = [
-  { href: "/", label: "Home", icon : <BiHome /> },
-  { href: "/buyers/new", label: "Create Lead", icon : <PiPlus /> },
+  { href: "/", label: "Home", icon: <AiFillHome className="text-md mr-2" /> },
+  { href: "/buyers/new", label: "Create Lead", icon: <IoPersonAddSharp className="text-md mr-2" /> },
+  { href: "/buyers", label: "Leads", icon: <FaPeopleGroup className="text-lg mr-2" /> },
 ];
 
 export default function Navbar() {
@@ -30,15 +32,15 @@ export default function Navbar() {
         {/* logo */}
         <div className="font-bold text-xl">E-Sahayak</div>
 
-        {/* mobile menu */}
-        <div className="hidden md:flex items-center space-x-4">
+        {/* menu */}
+        <div className="hidden md:flex items-center space-x-2">
           {navLinks.map((link) => (
-            <Button key={link.href} component={Link} href={link.href} variant="subtle">
-              {link.label}
+            <Button key={link.href} component={Link} href={link.href} variant="subtle" className="flex items-center gap-2">
+              {link.icon} {link.label}
             </Button>
           ))}
           <SelectedUserDisplay />
-          
+
           <div className="ml-2" onClick={toggleColorScheme}>
             <WiMoonAltFirstQuarter size={26} />
           </div>
@@ -48,11 +50,7 @@ export default function Navbar() {
         <div className="flex items-center space-x-2 md:hidden">
           <SelectedUserDisplay />
 
-          <DarkModeSwitch
-            checked={colorScheme === "dark"}
-            onChange={toggleColorScheme}
-            size={20}
-          />
+          <DarkModeSwitch checked={colorScheme === "dark"} onChange={toggleColorScheme} size={20} />
           <button onClick={() => setIsOpen(!isOpen)} className="text-gray-700 dark:text-gray-200 focus:outline-none">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {isOpen ? (
@@ -69,8 +67,16 @@ export default function Navbar() {
       {isOpen && (
         <div className={`${colorScheme === "dark" ? "bg-gray-800" : "bg-white"} md:hidden px-4 pb-4 space-y-2`}>
           {navLinks.map((link) => (
-            <Button key={link.href} component={Link} href={link.href} variant="subtle" fullWidth onClick={() => setIsOpen(false)}>
-              {link.label}
+            <Button
+              key={link.href}
+              component={Link}
+              href={link.href}
+              variant="subtle"
+              fullWidth
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-1"
+            >
+              {link.icon} {link.label}
             </Button>
           ))}
         </div>

@@ -3,9 +3,10 @@ import { Button, Group, Table, Text, FileInput, Modal, Loader } from "@mantine/c
 import Papa from "papaparse";
 import { leadFormSchema } from "../utils/leadFormSchema";
 import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, PURPOSE_OPTIONS, TIMELINE_OPTIONS, SOURCE_OPTIONS, BHK_OPTIONS } from "../utils/leadOptions";
-import { TbFileExport, TbFileImport } from "react-icons/tb";
+import { TbFileExport, TbFileImport, TbFileTypeCsv } from "react-icons/tb";
 import { PiExportBold } from "react-icons/pi";
 import { BiExport, BiImport } from "react-icons/bi";
+import { FaFileCsv } from "react-icons/fa6";
 
 const HEADERS = [
   "fullName",
@@ -108,8 +109,15 @@ export default function BuyersImportExport({ filters }: { filters: any }) {
       <Button onClick={() => setImportModal(true)} variant="light" color="blue" leftSection={<BiImport size={16} />}>
         Import CSV
       </Button>
-      <Modal opened={importModal} onClose={() => setImportModal(false)} title="Import Buyers CSV" size="lg">
-        <FileInput label="CSV File" accept=".csv" onChange={handleImport} disabled={importLoading} />
+      <Modal opened={importModal} onClose={() => setImportModal(false)} title="Import Buyers CSV" size="lg" centered >
+        <FileInput
+          label="CSV File"
+          accept=".csv"
+          placeholder="Upload CSV file"
+          onChange={handleImport}
+          disabled={importLoading}
+          leftSection={<FaFileCsv size={16} />}
+        />
         {importLoading && <Loader mt="md" />}
         {importErrors.length > 0 && (
           <Table mt="md" striped withTableBorder>

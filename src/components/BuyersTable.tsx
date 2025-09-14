@@ -149,10 +149,16 @@ export default function BuyersTable() {
   const { userId: loggedInUserId } = useUser();
   return (
     <div className="">
-    
       <Group mb="md" gap="md" wrap="wrap" align="end">
         <TextInput label="Search" placeholder="Name, Phone, Email" value={searchValue} onChange={(e) => setSearchValue(e.target.value)} />
-        <Select label="City" placeholder="Select city" data={CITY_OPTIONS} value={filters.city} onChange={(v) => setFilters((f) => ({ ...f, city: v || "" }))} clearable />
+        <Select
+          label="City"
+          placeholder="Select city"
+          data={CITY_OPTIONS}
+          value={filters.city}
+          onChange={(v) => setFilters((f) => ({ ...f, city: v || "" }))}
+          clearable
+        />
         <Select
           label="Property Type"
           placeholder="Select property type"
@@ -178,14 +184,31 @@ export default function BuyersTable() {
           clearable
         />
 
-        <Button onClick={() => setFilters({ city: "", propertyType: "", status: "", timeline: "", search: "" })} variant="light" color="red" leftSection={<MdClear size={14} />}>
+        <Button
+          onClick={() => setFilters({ city: "", propertyType: "", status: "", timeline: "", search: "" })}
+          variant="light"
+          color="red"
+          leftSection={<MdClear size={14} />}
+        >
           Clear Filters
         </Button>
         <BuyersImportExport filters={{ ...filters, pageSize }} />
       </Group>
       {loading ? (
-        <div className="w-full flex justify-center items-center my-8 h-[300px]">
-          <Loader />
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+        >
+          <Loader size="md" />
         </div>
       ) : (
         <Table striped highlightOnHover withTableBorder>
@@ -235,7 +258,7 @@ export default function BuyersTable() {
                 <Table.Td>{new Date(buyer.updatedAt).toLocaleString()}</Table.Td>
                 <Table.Td>
                   <Button size="xs" variant="light" color="violet" component="a" href={`/buyers/${buyer.id}`}>
-                    {buyer.ownerId == loggedInUserId ? "View / Edit" : "View"}
+                    {buyer.creatorId == loggedInUserId ? "View / Edit" : "View"}
                   </Button>
                 </Table.Td>
               </Table.Tr>
@@ -243,7 +266,7 @@ export default function BuyersTable() {
           </Table.Tbody>
         </Table>
       )}
-      <div className="w-full flex items-center justify-between mt-4">
+      <div className="w-full flex items-center justify-between mt-4 fixed bottom-2 left-0 px-4">
         <Pagination value={page} onChange={setPage} total={Math.ceil(total / pageSize)} mt="md" />
         <Select
           label="Page Size"

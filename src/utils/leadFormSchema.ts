@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { id } from 'zod/locales';
 
 export const leadFormSchema = z.object({
   fullName: z.string().min(2, 'Full Name must be at least 2 characters'),
@@ -25,4 +26,8 @@ export const leadFormSchema = z.object({
   }
 );
 
-export type LeadFormSchemaType = z.infer<typeof leadFormSchema>;
+export type LeadFormSchemaType = z.infer<typeof leadFormSchema> & {
+  id?: string;
+  updatedAt?: string;
+};
+

@@ -24,9 +24,9 @@ model Buyer {
   status       Status   @default(New)
   notes        String?  @db.Text
   tags         String[]
-  ownerId      Int
+  creatorId    Int
   updatedAt    DateTime @updatedAt
-  owner        User     @relation(fields: [ownerId], references: [id])
+  createdBy    User     @relation(fields: [creatorId], references: [id])
   history      BuyerHistory[]
 }
 

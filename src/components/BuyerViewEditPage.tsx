@@ -1,21 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
-import { Card, Title, Button, Group, Loader, Text, Divider, Table, Badge, CopyButton, ActionIcon, Modal, Collapse, Stack, Avatar } from "@mantine/core";
+import { Card, Title, Button, Group, Loader, Text, Divider, Badge, CopyButton, ActionIcon, Modal, Collapse, Stack, Avatar } from "@mantine/core";
 import { toast } from "react-toastify";
 import { MdPerson, MdPhone, MdLocationCity, MdHome, MdAttachMoney, MdAccessTime, MdSource, MdNotes, MdTag, MdExpandLess, MdExpandMore, MdAdd, MdEdit } from "react-icons/md";
-import { timelineToLabel } from "../utils/map";
-import LeadForm from "./LeadForm";
+import { bhkToLabel, timelineToLabel } from "../utils/map";
+import { LeadForm, LeadFormRef } from "./LeadForm";
 import { LuCopy, LuCopyCheck } from "react-icons/lu";
 
 function FieldItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number | null | undefined }) {
   if (!value) return null;
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(String(value));
-    toast.success(`${label} copied!`);
-  };
 
   return (
     <Group justify="apart" mb="sm">
@@ -41,12 +36,12 @@ export default function BuyerViewEditPage() {
   const [buyer, setBuyer] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState<any>(null);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [expanded, setExpanded] = useState(false);
+
+  const leadFormRef = useRef<LeadFormRef>(null);
 
   const fetchBuyer = async () => {
     setLoading(true);
@@ -58,8 +53,11 @@ export default function BuyerViewEditPage() {
         return res.json();
       })
       .then((data) => {
+        if (data.buyer && data.buyer.updatedAt) {
+          data.buyer.updatedAt = new Date(data.buyer.updatedAt);
+        }
+
         setBuyer(data.buyer);
-        setForm(data.buyer);
         setHistory(data.history || []);
         setLoading(false);
       })
@@ -76,7 +74,21 @@ export default function BuyerViewEditPage() {
     }
   }, [id]);
 
-  if (loading || !form)
+  const handleCancelClick = () => {
+    if (leadFormRef.current?.isDirty) {
+      setShowConfirm(true);
+    } else {
+      setIsEditing(false);
+    }
+  };
+
+  const handleDiscardChanges = () => {
+    leadFormRef.current?.reset(buyer);
+    setShowConfirm(false);
+    setIsEditing(false);
+  };
+
+  if (loading || !buyer)
     return (
       <div
         style={{
@@ -96,20 +108,13 @@ export default function BuyerViewEditPage() {
     );
 
   return (
-    <Card shadow="sm" padding="lg" radius="md" style={{ maxWidth: 800, margin: "2rem auto" }}>
-      <Group justify="apart" mb="md">
-        <Title order={2}>Buyer Details</Title>
+    <div className=" w-full max-w-2xl mx-auto pt-20 p-6">
+      <div className="mb-6 flex items-center justify-between">
+        {<Title order={2}>Buyer Details</Title>}
         <Button
           onClick={() => {
-            console.log(JSON.stringify(form) === JSON.stringify(buyer))
-            console.log(buyer.fullName, form.fullName)
             if (isEditing) {
-              if (JSON.stringify(form) !== JSON.stringify(buyer)) {
-                setShowConfirm(true);
-              } else {
-                setIsEditing(false);
-                fetchBuyer();
-              }
+              handleCancelClick();
             } else {
               setIsEditing(true);
             }
@@ -119,11 +124,10 @@ export default function BuyerViewEditPage() {
         >
           {isEditing ? "Cancel" : "Edit"}
         </Button>
-      </Group>
+      </div>
 
       {!isEditing ? (
         <>
-          {/* Profile Avatar */}
           <Group mb="md" align="center">
             <Avatar size={60} radius={30} color="violet" variant="light">
               {buyer.fullName.slice(0, 2).toUpperCase()}
@@ -131,18 +135,16 @@ export default function BuyerViewEditPage() {
             <Title order={3}>{buyer.fullName}</Title>
           </Group>
 
-          {/* Fields */}
           <FieldItem icon={<MdPerson />} label="Email" value={buyer.email} />
           <FieldItem icon={<MdPhone />} label="Phone" value={buyer.phone} />
           <FieldItem icon={<MdLocationCity />} label="City" value={buyer.city} />
           <FieldItem icon={<MdHome />} label="Property Type" value={buyer.propertyType} />
-          {buyer.bhk && <FieldItem icon={<MdHome />} label="BHK" value={buyer.bhk} />}
+          {buyer.bhk && <FieldItem icon={<MdHome />} label="BHK" value={bhkToLabel(buyer.bhk)} />}
           <FieldItem icon={<MdAttachMoney />} label="Budget" value={`${buyer.budgetMin || ""} - ${buyer.budgetMax || ""}`} />
           <FieldItem icon={<MdAccessTime />} label="Timeline" value={timelineToLabel(buyer.timeline)} />
           <FieldItem icon={<MdSource />} label="Source" value={buyer.source} />
           <FieldItem icon={<MdNotes />} label="Notes" value={buyer.notes} />
 
-          {/* Tags */}
           <div>
             <Group gap="xs" align="center" mb="md">
               <MdTag size={18} />
@@ -167,8 +169,9 @@ export default function BuyerViewEditPage() {
         </>
       ) : (
         <LeadForm
+          ref={leadFormRef}
           mode="edit"
-          initialData={form}
+          initialData={buyer}
           onSave={() => {
             setIsEditing(false);
             fetchBuyer();
@@ -387,7 +390,6 @@ export default function BuyerViewEditPage() {
               const res = await fetch(`/api/buyers/${id}`);
               const data = await res.json();
               setBuyer(data.buyer);
-              setForm(data.buyer);
               setHistory(data.history || []);
               setLoading(false);
             }}
@@ -396,6 +398,6 @@ export default function BuyerViewEditPage() {
           </Button>
         </Group>
       </Modal>
-    </Card>
+    </div>
   );
 }

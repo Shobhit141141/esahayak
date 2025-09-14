@@ -1,98 +1,113 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { TextInput, Select, NumberInput, Textarea, Button, Group, Stack, Card, Divider, Title, Text, CloseButton } from "@mantine/core";
+import { forwardRef, useCallback, useImperativeHandle, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { TextInput, Select, NumberInput, Textarea, Button, Group, Stack, Title, Text } from "@mantine/core";
 import { toast } from "react-toastify";
 import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, BHK_OPTIONS, PURPOSE_OPTIONS, TIMELINE_OPTIONS, SOURCE_OPTIONS } from "../utils/leadOptions";
 import { faker } from "@faker-js/faker";
-import { MdAutoFixNormal, MdClear } from "react-icons/md";
+import { MdAutoFixNormal, MdClear, MdRestartAlt } from "react-icons/md";
 import { leadFormSchema, LeadFormSchemaType } from "../utils/leadFormSchema";
-import { LeadFormType } from "@/types";
+
+const defaultValues: LeadFormSchemaType = {
+  fullName: "",
+  email: "",
+  phone: "",
+  city: "",
+  propertyType: "",
+  bhk: "",
+  purpose: "",
+  budgetMin: undefined,
+  budgetMax: undefined,
+  timeline: "",
+  source: "",
+  notes: "",
+  tags: [],
+};
 
 interface LeadFormProps {
+  initialData?: LeadFormSchemaType;
   mode?: "create" | "edit";
-  initialData?: LeadFormSchemaType & { id?: string };
-  onSave?: (data: LeadFormSchemaType) => void;
+  onSave?: () => void;
 }
 
-export default function LeadForm({ mode = "create", initialData, onSave }: LeadFormProps) {
-  const initialForm: LeadFormSchemaType = {
-    fullName: "",
-    email: "",
-    phone: "",
-    city: "",
-    propertyType: "",
-    bhk: "",
-    purpose: "",
-    budgetMin: undefined,
-    budgetMax: undefined,
-    timeline: "",
-    source: "",
-    notes: "",
-    tags: [],
-  };
-  const [form, setForm] = useState<LeadFormSchemaType>(initialData || initialForm);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+export interface LeadFormRef {
+  isDirty: boolean;
+  reset: (data: any) => void;
+}
+export const LeadForm = forwardRef<LeadFormRef, LeadFormProps>(({ initialData, mode = "create", onSave }: LeadFormProps, ref: React.Ref<LeadFormRef>) => {
   const [loading, setLoading] = useState(false);
-  const [tagInput, setTagInput] = useState("");
 
-  const handleChange = useCallback((field: keyof LeadFormSchemaType, value: any) => {
-    setForm((prev) => ({
-      ...prev,
-      [field]: value,
-      ...(field === "propertyType" && value !== "Apartment" && value !== "Villa" ? { bhk: "" } : {}),
-    }));
-  }, []);
+  const {
+    control,
+    handleSubmit,
+    register,
+    reset,
+    watch,
+    formState: { errors, isDirty },
+  } = useForm<LeadFormSchemaType>({
+    resolver: zodResolver(leadFormSchema),
+    defaultValues: initialData || defaultValues,
+  });
 
-  const validateForm = (data: LeadFormSchemaType) => {
-    const result = leadFormSchema.safeParse(data);
-    if (!result.success) {
-      const fieldErrors: { [key: string]: string } = {};
-      result.error.issues.forEach((err) => {
-        if (typeof err.path[0] === "string") fieldErrors[err.path[0]] = err.message ?? "";
-      });
-      setErrors(fieldErrors);
-      return false;
-    }
-    setErrors({});
-    return true;
+  useImperativeHandle(ref, () => ({
+    isDirty,
+    reset,
+  }));
+  const propertyType = watch("propertyType");
+  const budgetMin = watch("budgetMin");
+  const budgetMax = watch("budgetMax");
+
+  const onValidationErrors = (errors: any) => {
+    console.error("❌ ZOD VALIDATION FAILED", errors);
+    toast.error("There are validation errors in the form. Please check the console.");
   };
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    if (!validateForm(form)) return;
-
+  const onSubmit = async (data: LeadFormSchemaType) => {
     setLoading(true);
     try {
-      if (mode === "create") {
-        const res = await fetch("/api/buyers/new", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
-        });
-        const data = await res.json();
-        if (res.ok) {
-          toast.success("Lead created successfully!");
-          setForm(initialForm);
-          setErrors({});
-          if (onSave) onSave(form);
-        } else {
-          toast.error(data.error || "Failed to create lead");
+      let response;
+      if (mode === "edit") {
+        //  if nothing changed, do not send request
+        if (!isDirty) {
+          toast.info("No changes made");
+          setLoading(false);
+          return;
         }
-      } else {
-        const payload = { ...form, bhk: form.bhk || null };
-        const res = await fetch(`/api/buyers/${initialData?.id}`, {
+        const payload = {
+          ...data,
+          id: initialData?.id,
+          updatedAt: initialData?.updatedAt,
+        };
+        // UPDATE
+        response = await fetch(`/api/buyers/${initialData?.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        const data = await res.json();
-        if (res.ok) {
-          toast.success("Lead updated successfully!");
-          if (onSave) onSave(form);
-        } else {
-          toast.error(data.error || "Failed to update lead");
+      } else {
+        // CREATE
+        response = await fetch("/api/buyers/new", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+      }
+
+      const result = await response.json();
+
+      if (response.ok) {
+        const successMessage = mode === "edit" ? "Lead updated successfully!" : "Lead created successfully!";
+        toast.success(successMessage);
+        if (mode === "create") {
+          reset(defaultValues);
         }
+        if (onSave) {
+          onSave();
+        }
+      } else {
+        toast.error(result.error || `Failed to ${mode} lead`);
       }
     } catch (err) {
       toast.error("Server error");
@@ -102,10 +117,11 @@ export default function LeadForm({ mode = "create", initialData, onSave }: LeadF
 
   const autofillForm = () => {
     const propertyType = faker.helpers.arrayElement(["Apartment", "Villa", "Plot", "Office", "Retail"]);
-    const bhk = propertyType === "Apartment" || propertyType === "Villa" ? faker.helpers.arrayElement(["Studio", "1", "2", "3", "4"]) : "";
+    const bhk = propertyType === "Apartment" || propertyType === "Villa" ? faker.helpers.arrayElement(BHK_OPTIONS.map((option) => option.value)) : "";
     const budgetMin = faker.number.int({ min: 1000000, max: 5000000 });
     const budgetMax = faker.number.int({ min: budgetMin, max: 20000000 });
-    setForm({
+
+    reset({
       fullName: faker.person.fullName(),
       email: faker.internet.email(),
       phone: faker.phone.number().replace(/\D/g, "").slice(0, 10),
@@ -115,255 +131,200 @@ export default function LeadForm({ mode = "create", initialData, onSave }: LeadF
       purpose: faker.helpers.arrayElement(["Buy", "Rent"]),
       budgetMin,
       budgetMax,
-      timeline: faker.helpers.arrayElement(["0-3m", "3-6m", ">6m", "Exploring"]),
-      source: faker.helpers.arrayElement(["Website", "Referral", "Walk-in", "Call", "Other"]),
+      timeline: faker.helpers.arrayElement(TIMELINE_OPTIONS.map((option) => option.value)),
+      source: faker.helpers.arrayElement(SOURCE_OPTIONS.map((option) => option.value)),
       notes: faker.lorem.sentence(),
       tags: ["urgent", "follow-up", "premium", "budget", "investor"].filter(() => faker.datatype.boolean()),
     });
-    setErrors({});
   };
 
-  const handleTagKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      const value = e.currentTarget.value.trim();
-      if (e.key === " " && value) {
-        if (value && !(form.tags ?? []).includes(value)) {
-          const newTags = [...(form.tags ?? []), value];
-          if (JSON.stringify(newTags) !== JSON.stringify(form.tags)) {
-            handleChange("tags", newTags);
-          }
-        }
-
-        setTagInput("");
-        e.preventDefault();
-      }
-    },
-    [form.tags, handleChange]
-  );
-
-  const handleTagBlur = useCallback(
-    (e: React.FocusEvent<HTMLInputElement>) => {
-      const value = e.target.value.trim();
-      if (value && !(form.tags ?? []).includes(value)) {
-        const newTags = [...(form.tags ?? []), value];
-        if (JSON.stringify(newTags) !== JSON.stringify(form.tags)) {
-          handleChange("tags", newTags);
-        }
-      }
-
-      setTagInput("");
-    },
-    [form.tags, handleChange]
-  );
-
-  const removeTag = (index: number) => {
-    const newTags = (form.tags ?? []).filter((_, i) => i !== index);
-    if (JSON.stringify(newTags) !== JSON.stringify(form.tags)) {
-      handleChange("tags", newTags);
+  const handleResetOrClear = () => {
+    if (mode === "edit") {
+      reset(initialData);
+    } else {
+      reset(defaultValues);
     }
   };
 
-  const clearForm = () => {
-    setForm(initialForm);
-    setErrors({});
-  };
-
-  const resetForm = () => {
-    setForm(initialData || initialForm);
-    setErrors({});
-  };
-
   return (
-    <div className="shadow-sm p-6 rounded-md bg-transparent w-full max-w-2xl mx-auto pt-20 ">
+    <div className={`shadow-sm rounded-md bg-transparent w-full max-w-2xl mx-auto ${mode === "create" ? "pt-20 p-6 " : ""}`}>
       <Title order={2} mb="md">
         {mode === "create" ? "Create New Lead" : "Edit Lead"}
       </Title>
 
-      {/* buttons for accessibility */}
-      <form onSubmit={handleSubmit} className="w-full">
+      <form onSubmit={handleSubmit(onSubmit, onValidationErrors)} className="w-full">
         <Stack gap="md">
-          <div className="flex items-baseline gap-2 w-full">
-            {mode === "create" ? (
-              <>
-                <div className="flex flex-col items-start gap-2">
-                  <Button type="button" color="blue" variant="light" onClick={autofillForm} leftSection={<MdAutoFixNormal size={16} />}>
-                    Autofill with Fake Data
-                  </Button>
-                  <Text size="xs">For testing purposes only</Text>
-                </div>
-                <Button type="button" color="red" variant="light" leftSection={<MdClear size={16} />} onClick={clearForm}>
-                  Clear Form
+          {/* Action Buttons */}
+          <div className="flex items-baseline gap-4 w-full">
+            {mode === "create" && (
+              <div className="flex flex-col items-start gap-2">
+                <Button type="button" color="blue" variant="light" onClick={autofillForm} leftSection={<MdAutoFixNormal size={16} />}>
+                  Autofill
                 </Button>
-              </>
-            ) : (
-              <>
-                <Button type="button" color="blue" variant="light" onClick={resetForm} leftSection={<MdAutoFixNormal size={16} />}>
-                  Reset Form
-                </Button>
-              </>
+              </div>
             )}
+            <Button
+              type="button"
+              color={mode === "edit" ? "orange" : "red"}
+              variant="light"
+              leftSection={mode === "edit" ? <MdRestartAlt size={16} /> : <MdClear size={16} />}
+              onClick={handleResetOrClear}
+            >
+              {mode === "edit" ? "Reset Changes" : "Clear Form"}
+            </Button>
           </div>
-          {/* lead info */}
+
+          {/* Lead Info */}
           <div className="flex gap-4 w-full">
-            <TextInput
-              label="Full Name"
-              className="flex-1"
-              placeholder="Enter full name"
-              minLength={2}
-              __clearable
-              value={form.fullName}
-              onChange={(e) => handleChange("fullName", e.target.value)}
-              variant="filled"
-              error={errors.fullName ?? ""}
-            />
-            <TextInput
-              label="Email"
-              className="flex-1"
-              placeholder="Enter email"
-              value={form.email}
-              onChange={(e) => handleChange("email", e.target.value)}
-              variant="filled"
-              error={errors.email ?? ""}
-            />
+            <TextInput label="Full Name" className="flex-1" placeholder="Enter full name" variant="filled" {...register("fullName")} error={errors.fullName?.message} />
+            <TextInput label="Email" className="flex-1" placeholder="Enter email" variant="filled" {...register("email")} error={errors.email?.message} />
           </div>
-          <TextInput
-            label="Phone"
-            placeholder="Enter phone number"
-            className="w-1/2"
-            value={form.phone}
-            onChange={(e) => handleChange("phone", e.target.value)}
-            variant="filled"
-            error={errors.phone ?? ""}
-          />
-          {/* property details */}
-          <Divider label="Property Details" labelPosition="center" my="sm" />
+          <TextInput label="Phone" placeholder="Enter phone number" className="w-1/2" variant="filled" {...register("phone")} error={errors.phone?.message} />
+
+          {/* Property Details */}
           <Group grow>
-            <Select
-              label="City"
-              placeholder="Select city"
-              data={CITY_OPTIONS}
-              value={form.city || null}
-              onChange={(v) => handleChange("city", v || "")}
-              variant="filled"
-              error={errors.city ?? ""}
+            <Controller
+              name="city"
+              control={control}
+              render={({ field }) => <Select label="City" placeholder="Select city" data={CITY_OPTIONS} variant="filled" {...field} error={errors.city?.message} />}
             />
-            <Select
-              label="Property Type"
-              placeholder="Select type"
-              data={PROPERTY_TYPE_OPTIONS}
-              value={form.propertyType || null}
-              onChange={(v) => handleChange("propertyType", v || "")}
-              variant="filled"
-              error={errors.propertyType ?? ""}
+            <Controller
+              name="propertyType"
+              control={control}
+              render={({ field }) => (
+                <Select label="Property Type" placeholder="Select type" data={PROPERTY_TYPE_OPTIONS} variant="filled" {...field} error={errors.propertyType?.message} />
+              )}
             />
-            {(form.propertyType === "Apartment" || form.propertyType === "Villa") && (
-              <Select
-                label="BHK"
-                placeholder="Select BHK"
-                data={BHK_OPTIONS}
-                value={form.bhk || null}
-                onChange={(v) => handleChange("bhk", v || "")}
-                variant="filled"
-                error={errors.bhk ?? ""}
+            {(propertyType === "Apartment" || propertyType === "Villa") && (
+              <Controller
+                name="bhk"
+                control={control}
+                render={({ field }) => <Select label="BHK" placeholder="Select BHK" data={BHK_OPTIONS} variant="filled" {...field} error={errors.bhk?.message} />}
               />
             )}
           </Group>
-          {/* purpose and budget */}
+
+          {/* Purpose and Budget */}
           <Group grow>
-            <Select
-              label="Purpose"
-              placeholder="Buy or Rent"
-              data={PURPOSE_OPTIONS}
-              value={form.purpose || null}
-              onChange={(v) => handleChange("purpose", v || "")}
-              variant="filled"
-              error={errors.purpose ?? ""}
+            <Controller
+              name="purpose"
+              control={control}
+              render={({ field }) => <Select label="Purpose" placeholder="Buy or Rent" data={PURPOSE_OPTIONS} variant="filled" {...field} error={errors.purpose?.message} />}
             />
-            <NumberInput
-              label="Budget Min (INR)"
-              placeholder="Min budget"
-              value={form.budgetMin}
-              onChange={(v) => handleChange("budgetMin", v)}
-              min={0}
-              variant="filled"
-              step={50000}
-              max={form.budgetMax || undefined}
-              error={errors.budgetMin ?? ""}
+            <Controller
+              name="budgetMin"
+              control={control}
+              render={({ field }) => (
+                <NumberInput
+                  label="Budget Min (INR)"
+                  placeholder="Min budget"
+                  min={0}
+                  step={50000}
+                  max={budgetMax || undefined}
+                  variant="filled"
+                  {...field}
+                  error={errors.budgetMin?.message}
+                />
+              )}
             />
-            <NumberInput
-              label="Budget Max (INR)"
-              placeholder="Max budget"
-              value={form.budgetMax}
-              onChange={(v) => handleChange("budgetMax", v)}
-              min={form.budgetMin || 0}
-              variant="filled"
-              step={50000}
-              error={errors.budgetMax ?? ""}
+            <Controller
+              name="budgetMax"
+              control={control}
+              render={({ field }) => (
+                <NumberInput label="Budget Max (INR)" placeholder="Max budget" min={budgetMin || 0} step={50000} variant="filled" {...field} error={errors.budgetMax?.message} />
+              )}
             />
           </Group>
+
           {/* Timeline & Source */}
           <Group grow>
-            <Select
-              label="Timeline"
-              placeholder="Select timeline"
-              data={TIMELINE_OPTIONS}
-              value={form.timeline || null}
-              onChange={(v) => handleChange("timeline", v || "")}
-              variant="filled"
-              error={errors.timeline ?? ""}
+            <Controller
+              name="timeline"
+              control={control}
+              render={({ field }) => <Select label="Timeline" placeholder="Select timeline" data={TIMELINE_OPTIONS} variant="filled" {...field} error={errors.timeline?.message} />}
             />
-            <Select
-              label="Source"
-              placeholder="Lead source"
-              data={SOURCE_OPTIONS}
-              value={form.source || null}
-              onChange={(v) => handleChange("source", v || "")}
-              variant="filled"
-              error={errors.source ?? ""}
+            <Controller
+              name="source"
+              control={control}
+              render={({ field }) => <Select label="Source" placeholder="Lead source" data={SOURCE_OPTIONS} variant="filled" {...field} error={errors.source?.message} />}
             />
           </Group>
-          {/* Notes */}
-          <Textarea
-            label="Notes"
-            placeholder="Add notes (max 1000 chars)"
-            __clearable
-            value={form.notes}
-            onChange={(e) => handleChange("notes", e.target.value)}
-            maxLength={1000}
-            variant="filled"
-            error={errors.notes ?? ""}
-            minRows={3}
+
+          <Textarea label="Notes" placeholder="Add notes (max 1000 chars)" variant="filled" minRows={3} {...register("notes")} error={errors.notes?.message} />
+
+          <Controller
+            name="tags"
+            control={control}
+            render={({ field }) => {
+              const [tagInput, setTagInput] = useState("");
+              const tags = field.value ?? [];
+
+              const addTag = (tag: string) => {
+                if (tag && !tags.includes(tag)) {
+                  field.onChange([...tags, tag]);
+                }
+              };
+
+              const removeTag = (idx: number) => {
+                const newTags = tags.filter((_, i) => i !== idx);
+                field.onChange(newTags);
+              };
+
+              const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === " " || e.key === "Enter") {
+                  e.preventDefault();
+                  const newTag = tagInput.trim();
+                  if (newTag) {
+                    addTag(newTag);
+                    setTagInput("");
+                  }
+                }
+              };
+
+              const handleTagBlur = () => {
+                const newTag = tagInput.trim();
+                if (newTag) {
+                  addTag(newTag);
+                  setTagInput("");
+                }
+              };
+
+              return (
+                <>
+                  <TextInput
+                    label="Tags"
+                    placeholder="Type tag and press space"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={handleTagKeyDown}
+                    onBlur={handleTagBlur}
+                    variant="filled"
+                    error={errors.tags?.message}
+                  />
+                  <Group gap="xs" mt="0">
+                    {tags.map((tag: string, idx: number) => (
+                      <Button key={`${tag}-${idx}`} size="xs" radius="xl" variant="light" color="violet" onClick={() => removeTag(idx)}>
+                        {tag} <span style={{ marginLeft: 4 }}>×</span>
+                      </Button>
+                    ))}
+                  </Group>
+                </>
+              );
+            }}
           />
-          {/* tags */}
-          <TextInput
-            label="Tags"
-            placeholder="Type tag and press space"
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            onKeyDown={handleTagKeyDown}
-            onBlur={handleTagBlur}
-            variant="filled"
-          />
-          {/* tags shown*/}
-          <Group gap="xs" mt="0">
-            {(form.tags ?? []).map((tag, idx) => (
-              <Button
-                key={`${tag}-${idx}`} 
-                size="xs"
-                radius="xl"
-                variant="light"
-                color="violet"
-                onClick={() => removeTag(idx)}
-              >
-                {tag} <span style={{ marginLeft: 4 }}>×</span>
-              </Button>
-            ))}
-          </Group>
-          <Button type="submit" loading={loading} fullWidth mt="sm" size="md">
-            {mode === "create" ? "Create Lead" : "Update Lead"}
+
+          <Button
+            type="submit"
+            loading={loading}
+            mt="md"
+            onClick={() => {
+              console.log(watch());
+            }}
+          >
+            {mode === "create" ? "Create Lead" : "Save Changes"}
           </Button>
         </Stack>
       </form>
     </div>
   );
-}
+});

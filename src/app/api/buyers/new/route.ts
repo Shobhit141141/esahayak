@@ -8,20 +8,14 @@ export async function POST(req: NextRequest) {
   const error = leadFormSchema.safeParse(body).success ? null : "Invalid input data";
   if (error) return NextResponse.json({ error }, { status: 400 });
 
-  const token = req.cookies.get("token")?.value;
-
-  if (!token) {
-    return NextResponse.json({ error: "No token found" }, { status: 401 });
-  }
-
-  const [userId, role] =  Buffer.from(token, "base64").toString().split(":");
-  console.log(body.bhk)
-  console.log(body.timeline)
+  const userId = req.cookies.get("user-id")?.value;
+  const role = req.cookies.get("role")?.value;
+  
   try {
     const buyer = await prisma.buyer.create({
       data: {
         ...body,
-        ownerId: Number(userId),
+        creatorId: Number(userId),
         bhk: mapBHK(body.bhk),
         timeline: mapTimeline(body.timeline),
       },
