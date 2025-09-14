@@ -338,7 +338,7 @@ export default function BuyersTable() {
                   <Table.Td>{timelineToLabel(buyer.timeline)}</Table.Td>
                   <Table.Td>
                     <Badge color={statusColors[buyer.status]}>{buyer.status}</Badge>
-                    {buyer.creatorId == loggedInUserId || user?.role === "ADMIN" && (
+                    {( user?.role === "ADMIN" || buyer.creatorId === loggedInUserId) && (
                       <Select
                         value={buyer.status}
                         data={STATUS_OPTIONS}
@@ -355,7 +355,7 @@ export default function BuyersTable() {
                   <Table.Td>
                     <Group gap="xs">
                       <Button size="xs" variant="filled" color="violet" component="a" href={`/buyers/${buyer.id}`}>
-                        {buyer.creatorId == loggedInUserId ? "View / Edit" : "View"}
+                        {(buyer.creatorId == loggedInUserId || user?.role === "ADMIN" )? "View / Edit" : "View"}
                       </Button>
                     </Group>
                   </Table.Td>

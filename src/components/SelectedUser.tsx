@@ -16,13 +16,13 @@ export default function SelectedUserDisplay() {
 
   return (
     <Menu shadow="md" width={240} opened={opened} onChange={setOpened}>
-      
       <Menu.Target>
         <Button variant="subtle" style={{ padding: 0, background: "none" }}>
           <Group gap="xs">
             <Avatar radius="xl" size={30} variant="filled" color="violet">
-              {loading ? user?.name.slice(0, 1) : "NA"}
+              {user?.name ? user.name.charAt(0).toUpperCase() : "NA"}
             </Avatar>
+
             <div className="flex flex-col" style={{ textAlign: "left" }}>
               <Text size="sm">{loading ? "user" : user?.name || "none"}</Text>
               <Text size="xs" color="dimmed">
@@ -49,8 +49,9 @@ export default function SelectedUserDisplay() {
             >
               <Group gap="xs">
                 <Avatar radius="xl" variant="filled" size={24} color="violet">
-                  {u.name[0]}
+                  {u.name ? u.name.charAt(0).toUpperCase() : "N"}
                 </Avatar>
+
                 <div className="flex flex-col" style={{ textAlign: "left" }}>
                   <Text size="sm">{u.name}</Text>
                   <Text size="xs" color="dimmed">
