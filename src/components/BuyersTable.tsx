@@ -2,12 +2,16 @@
 import { useState, useEffect } from "react";
 import { useUser } from "../context/UserContext";
 import { Table, TextInput, Select, Button, Group, Pagination, Loader, Badge } from "@mantine/core";
+import { useState as useReactState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, TIMELINE_OPTIONS } from "../utils/leadOptions";
 import { MdClear } from "react-icons/md";
 import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 import { bhkToLabel, timelineToLabel } from "../utils/map";
 import BuyersImportExport from "./BuyersImportExport";
+import { toast } from "react-toastify";
+import { Controller, useForm } from "react-hook-form";
+import { fields } from "@hookform/resolvers/ajv/src/__tests__/__fixtures__/data.js";
 
 const STATUS_OPTIONS = [
   { value: "New", label: "New" },
@@ -55,13 +59,6 @@ export default function BuyersTable() {
     field: "updatedAt",
     direction: "desc",
   });
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setFilters((prev) => ({ ...prev, search: searchValue }));
-    }, 400);
-    return () => clearTimeout(timeout);
-  }, [searchValue]);
 
   useEffect(() => {
     const params = new URLSearchParams({ ...filters, page: String(page) });
@@ -145,12 +142,58 @@ export default function BuyersTable() {
     Converted: "green",
     Dropped: "red",
   };
+  const { control, handleSubmit, reset } = useForm({
+    defaultValues: {
+      search: filters.search,
+    },
+  });
 
   const { userId: loggedInUserId, user } = useUser();
+  const [statusUpdating, setStatusUpdating] = useReactState<string | null>(null);
+  const handleStatusChange = async (buyerId: string, newStatus: string) => {
+    setStatusUpdating(buyerId);
+    try {
+      const res = await fetch(`/api/buyers/${buyerId}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        toast.success("Status updated");
+      } else {
+        toast.error("Error updating status");
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error("Error updating status");
+    } finally {
+      setStatusUpdating(null);
+    }
+    setLoading(true);
+    fetch(`/api/buyers?${new URLSearchParams({ ...filters, page: String(page), pageSize: String(pageSize) })}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setBuyers(data.buyers || []);
+        setTotal(data.total || 0);
+        setLoading(false);
+      });
+  };
   return (
     <div className="">
       <Group mb="md" gap="md" wrap="wrap" align="end">
-        <TextInput label="Search" placeholder="Name, Phone, Email" value={searchValue} onChange={(e) => setSearchValue(e.target.value)} />
+        <form onSubmit={handleSubmit((data) => setFilters((f) => ({ ...f, search: data.search })))} className="flex flex-row items-end gap-2">
+          <Controller name="search" control={control} defaultValue="" render={({ field }) => <TextInput label="Search" placeholder="Name, Phone, Email" {...field} />} />
+          <Controller
+            name="search"
+            control={control}
+            render={({ field }) => (
+              <Button type="submit" disabled={!field.value.trim()}>
+                Search
+              </Button>
+            )}
+          />
+        </form>
+
         <Select label="City" placeholder="Select city" data={CITY_OPTIONS} value={filters.city} onChange={(v) => setFilters((f) => ({ ...f, city: v || "" }))} clearable />
         <Select
           label="Property Type"
@@ -177,7 +220,16 @@ export default function BuyersTable() {
           clearable
         />
 
-        <Button onClick={() => setFilters({ city: "", propertyType: "", status: "", timeline: "", search: "" })} variant="light" color="red" leftSection={<MdClear size={14} />}>
+        <Button
+          onClick={() => {
+            setFilters({ city: "", propertyType: "", status: "", timeline: "", search: "" });
+            reset();
+          }}
+          variant="light"
+          color="red"
+          leftSection={<MdClear size={14} />}
+          disabled={!filters.city && !filters.propertyType && !filters.status && !filters.timeline}
+        >
           Clear Filters
         </Button>
         <BuyersImportExport filters={{ ...filters, pageSize }} />
@@ -200,7 +252,7 @@ export default function BuyersTable() {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <Table striped highlightOnHover withTableBorder>
+          <Table striped withTableBorder>
             <Table.Thead>
               <Table.Tr>
                 {[
@@ -239,9 +291,19 @@ export default function BuyersTable() {
                   </Table.Td>
                   <Table.Td>{timelineToLabel(buyer.timeline)}</Table.Td>
                   <Table.Td>
-                    <Badge variant="filled" color={statusColors[buyer.status] || "red"}>
-                      {buyer.status}
-                    </Badge>
+                    <Badge color={statusColors[buyer.status]}>{buyer.status}</Badge>
+                    {buyer.creatorId == loggedInUserId && (
+                      <Select
+                        value={buyer.status}
+                        data={STATUS_OPTIONS}
+                        onChange={(v) => v && handleStatusChange(buyer.id, v)}
+                        disabled={statusUpdating === buyer.id}
+                        size="xs"
+                        style={{ minWidth: 120 }}
+                        variant="filled"
+                        pt={"sm"}
+                      />
+                    )}
                   </Table.Td>
                   <Table.Td>{new Date(buyer.updatedAt).toLocaleString()}</Table.Td>
                   <Table.Td>
