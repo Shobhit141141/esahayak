@@ -1,7 +1,18 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import prisma from "./lib/prisma";
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
+  const path = req.nextUrl.pathname;
+
+  if (path === "/api/users/create") {
+    const userCount = await prisma.user.count();
+    if (userCount === 0) {
+      console.log("Bootstrap mode: no users exist, allowing account creation without token");
+      return NextResponse.next();
+    }
+  }
+
   const token = req.cookies.get("token")?.value;
 
   if (!token) {
@@ -23,5 +34,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/buyers/:path*","/api/users/create"],
+  matcher: ["/api/buyers/:path*", "/api/users/create"],
 };
