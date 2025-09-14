@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Group, Avatar, Menu, Button, Divider, Text } from "@mantine/core";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";

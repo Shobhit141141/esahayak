@@ -1,7 +1,6 @@
 "use client";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import Cookies from "js-cookie";
-import { toast } from "react-toastify";
 
 interface UserContextType {
   userId: string | null;
@@ -21,12 +20,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const token = Cookies.get("token") || null;
+  const username = Cookies.get("username");
+  const role = Cookies.get("role");
 
   useEffect(() => {
     const fetchUsers = async () => {
-    
-      const username = Cookies.get("username");
-      const role = Cookies.get("role");
       setLoading(true);
       try {
         const res = await fetch("/api/users");
@@ -49,7 +47,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       }
     };
     fetchUsers();
-  }, [Cookies.get("token"), Cookies.get("username"), Cookies.get("role")]);
+  }, [token, username, role]);
 
   return <UserContext.Provider value={{ userId, user, users, loading, setUser, setUsers, token }}>{children}</UserContext.Provider>;
 }

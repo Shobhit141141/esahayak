@@ -1,9 +1,9 @@
 "use client";
 
-import { forwardRef, useCallback, useImperativeHandle, useState } from "react";
+import { forwardRef, useImperativeHandle, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { TextInput, Select, NumberInput, Textarea, Button, Group, Stack, Title, Text, Loader } from "@mantine/core";
+import { TextInput, Select, NumberInput, Textarea, Button, Group, Stack, Title } from "@mantine/core";
 import { toast } from "react-toastify";
 import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, BHK_OPTIONS, PURPOSE_OPTIONS, TIMELINE_OPTIONS, SOURCE_OPTIONS } from "../utils/leadOptions";
 import { faker } from "@faker-js/faker";
@@ -61,7 +61,7 @@ export const LeadForm = forwardRef<LeadFormRef, LeadFormProps>(({ initialData, m
   const budgetMin = watch("budgetMin");
   const budgetMax = watch("budgetMax");
 
-  const { userId, token } = useUser();
+  const { token } = useUser();
 
   const onValidationErrors = (errors: any) => {
     console.error("❌ ZOD VALIDATION FAILED", errors);
@@ -114,6 +114,7 @@ export const LeadForm = forwardRef<LeadFormRef, LeadFormProps>(({ initialData, m
         toast.error(result.error || `Failed to ${mode} lead`);
       }
     } catch (err) {
+      console.error("Error submitting lead form:", err);
       toast.error("Server error");
     }
     setLoading(false);

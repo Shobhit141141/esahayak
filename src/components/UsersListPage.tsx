@@ -1,12 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
 import { Table, Loader, Title, Button } from "@mantine/core";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 
 export default function UsersListPage() {
   const router = useRouter();
-  const { users, user, loading } = useUser();
+  const { users, loading } = useUser();
   return (
     <div style={{ maxWidth: 700, margin: "2rem auto" }} className="pt-20">
       <Title order={2} mb="md">

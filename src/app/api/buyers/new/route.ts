@@ -9,7 +9,6 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ error }, { status: 400 });
 
   const userId = req.cookies.get("user-id")?.value;
-  const role = req.cookies.get("role")?.value;
   try {
     const buyer = await prisma.buyer.create({
       data: {

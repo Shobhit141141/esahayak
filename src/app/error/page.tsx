@@ -1,5 +1,6 @@
 "use client";
 
 export default function ProblemChild() {
-  throw new Error("Test error boundary!");
+  // 🚨 UNCOMMENT TO TEST ERROR BOUNDARY 🚨
+  // throw new Error("Test error boundary!");
 }

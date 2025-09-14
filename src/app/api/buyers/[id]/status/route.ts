@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "../../../../../lib/prisma";
 import { z } from "zod";
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function PUT(req: NextRequest, { params }:{ params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
   const { status } = await req.json();
   const userId = req.cookies.get("user-id")?.value;
   const role = req.cookies.get("role")?.value;

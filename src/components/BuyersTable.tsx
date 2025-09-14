@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useUser } from "../context/UserContext";
-import { Table, TextInput, Select, Button, Group, Pagination, Loader, Badge, Text } from "@mantine/core";
+import { Table, TextInput, Select, Button, Group, Pagination, Loader, Badge } from "@mantine/core";
 import { useState as useReactState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, TIMELINE_OPTIONS } from "../utils/leadOptions";
@@ -11,7 +11,6 @@ import { bhkToLabel, timelineToLabel } from "../utils/map";
 import BuyersImportExport from "./BuyersImportExport";
 import { toast } from "react-toastify";
 import { Controller, useForm } from "react-hook-form";
-import { fields } from "@hookform/resolvers/ajv/src/__tests__/__fixtures__/data.js";
 import AuthBoundary from "./AuthBoundary";
 
 const STATUS_OPTIONS = [
@@ -23,8 +22,6 @@ const STATUS_OPTIONS = [
   { value: "Converted", label: "Converted" },
   { value: "Dropped", label: "Dropped" },
 ];
-
-const PAGE_SIZE = 10;
 
 type Buyer = {
   id: string;
@@ -55,7 +52,6 @@ export default function BuyersTable() {
     search: searchParams.get("search") || "",
   });
   const [pageSize, setPageSize] = useState(10);
-  const [searchValue, setSearchValue] = useState(filters.search);
   const [sort, setSort] = useState<{ field: string | null; direction: "asc" | "desc" | null }>({
     field: "updatedAt",
     direction: "desc",

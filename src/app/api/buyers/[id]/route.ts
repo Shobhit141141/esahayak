@@ -120,19 +120,29 @@ const mapBuyerToClientFormat = (buyer: any) => {
   };
 };
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { params } = context;
+  const { id } = await params;
+
   const userId = req.cookies.get("user-id")?.value;
   const role = req.cookies.get("role")?.value;
+
   if (!userId || !role) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
   const buyer = await prisma.buyer.findUnique({ where: { id: Number(id) } });
-  if (!buyer) return NextResponse.json({ error: "Buyer not found" }, { status: 404 });
+
+  if (!buyer) {
+    return NextResponse.json({ error: "Buyer not found" }, { status: 404 });
+  }
+
   if (role !== "ADMIN" && String(buyer.creatorId) !== String(userId)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+
   await prisma.buyerHistory.deleteMany({ where: { buyerId: Number(id) } });
   await prisma.buyer.delete({ where: { id: Number(id) } });
+
   return NextResponse.json({ success: true });
 }

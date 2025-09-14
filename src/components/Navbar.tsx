@@ -3,7 +3,6 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@mantine/core";
 import { useMantineColorScheme, useComputedColorScheme } from "@mantine/core";
-import { DarkModeSwitch } from "react-toggle-dark-mode";
 import SelectedUserDisplay from "./SelectedUser";
 import { WiMoonAltFirstQuarter } from "react-icons/wi";
 import { IoPersonAddSharp } from "react-icons/io5";

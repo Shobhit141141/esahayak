@@ -17,6 +17,7 @@ export function middleware(req: NextRequest) {
 
     return response;
   } catch (error) {
+    console.error("Middleware Error:", error);
     return NextResponse.json({ error: "Invalid token format" }, { status: 400 });
   }
 }

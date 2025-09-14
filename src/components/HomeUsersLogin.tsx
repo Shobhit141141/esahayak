@@ -1,17 +1,15 @@
 "use client";
 import { useUser } from "../context/UserContext";
 import { FaCheckCircle } from "react-icons/fa";
-import { Card, Title, Button, Group, Loader, Text, Avatar, Badge, Divider, useComputedColorScheme } from "@mantine/core";
+import { Card, Loader, Text, Avatar, Badge, Divider, useComputedColorScheme } from "@mantine/core";
 import { HiInformationCircle } from "react-icons/hi";
 import { FaCloudMoon, FaPeopleGroup } from "react-icons/fa6";
 import { BsClipboardDataFill } from "react-icons/bs";
 import { GrDocumentCsv } from "react-icons/gr";
-import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
 export default function HomeUsersLogin() {
   const { users, loading, userId } = useUser();
-  const router = useRouter();
   const computedColorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: true,
   });

@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { Button, Group, Table, Text, FileInput, Modal, Loader } from "@mantine/core";
+import {  useState } from "react";
+import { Button, Group, Table, FileInput, Modal, Loader } from "@mantine/core";
 import Papa from "papaparse";
 import { leadFormSchema } from "../utils/leadFormSchema";
 import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, PURPOSE_OPTIONS, TIMELINE_OPTIONS, SOURCE_OPTIONS, BHK_OPTIONS } from "../utils/leadOptions";
@@ -51,7 +51,6 @@ export default function BuyersImportExport({ filters, onImport }: { filters: any
   const [importModal, setImportModal] = useState(false);
   const [importErrors, setImportErrors] = useState<string[]>([]);
   const [importLoading, setImportLoading] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const handleExport = async () => {
     const res = await fetch(`/api/buyers?${new URLSearchParams({ ...filters, page: "1", pageSize: "1000" })}`);

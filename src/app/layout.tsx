@@ -6,6 +6,7 @@ import "@mantine/core/styles.css";
 import { ToastContainer } from "react-toastify";
 import Navbar from "../components/Navbar";
 import { UserProvider } from "../context/UserContext";
+import { Suspense } from "react";
 
 const getRaleway = Raleway({
   subsets: ["latin"],
@@ -39,7 +40,9 @@ export default function RootLayout({
           <UserProvider>
             <ToastContainer theme="colored" />
             <Navbar />
-            {children}
+            <Suspense fallback={<div>Loading...</div>}>
+              {children}
+            </Suspense>
           </UserProvider>
         </body>
       </MantineProvider>

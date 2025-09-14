@@ -57,7 +57,7 @@ export default function BuyerViewEditPage() {
   const [createdBy, setCreatedBy] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [saving, ] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -106,6 +106,7 @@ export default function BuyerViewEditPage() {
       toast.success("Buyer deleted");
       router.push("/buyers");
     } catch (error) {
+      console.log(error);
       toast.error("Failed to delete buyer");
       setLoading(false);
     }

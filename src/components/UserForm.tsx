@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Card, Title, TextInput, Button, Group, Select } from "@mantine/core";
+import { Card, Title, TextInput, Button, Select } from "@mantine/core";
 import { toast } from "react-toastify";
 import { useUser } from "@/context/UserContext";
 
@@ -29,7 +29,7 @@ export default function UserForm() {
     setErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
-  const {user, users, setUsers} = useUser();
+  const { users, setUsers} = useUser();
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();

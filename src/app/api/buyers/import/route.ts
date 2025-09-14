@@ -4,7 +4,6 @@ const { leadFormSchema } = await import("@/utils/leadFormSchema");
 export async function POST(req: NextRequest) {
   const { buyers } = await req.json();
   const userId = req.cookies.get("user-id")?.value;
-  const role = req.cookies.get("role")?.value;
 
   if (!Array.isArray(buyers) || buyers.length === 0) {
     return NextResponse.json({ error: "No valid buyers to import" }, { status: 400 });
