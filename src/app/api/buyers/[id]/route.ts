@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import {prisma} from "@/lib/prisma";
 import { bhkToLabel, mapBHK, mapTimeline, timelineToLabel } from "@/utils/map";
 import { NextRequest, NextResponse } from "next/server";
 

@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(req: NextRequest) {
+
+  const ip = req.headers.get("x-forwarded-for") ?? "Unknown IP";
+  console.log(ip)
   const token = req.cookies.get("token")?.value;
 
   if (!token) {

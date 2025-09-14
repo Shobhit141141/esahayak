@@ -11,7 +11,10 @@
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
     "db:setup": "npm run prisma:migrate && npm run prisma:generate",
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed.ts",
+    "postinstall": "prisma generate --schema=prisma/schema.prisma"
+
+
   },
   "dependencies": {
     "@faker-js/faker": "^9.9.0",

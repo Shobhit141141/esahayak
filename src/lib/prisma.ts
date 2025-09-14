@@ -1,7 +1,14 @@
-import { PrismaClient } from "../generated/prisma/client";
+import { PrismaClient } from '../generated/prisma/client.js';
 
-const prisma = new PrismaClient({
-  log: [{ emit: "event", level: "error" }],
-});
+declare global {
+  // eslint-disable-next-line no-var
+  var prisma: PrismaClient | undefined;
+}
 
-export default prisma;
+export const prisma =
+  global.prisma ??
+  new PrismaClient({
+    log: ['query'], // optional
+  });
+
+if (process.env.NODE_ENV !== 'production') global.prisma = prisma;

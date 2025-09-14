@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "../../../../lib/prisma";
+import {prisma} from "@/lib/prisma";
 const { leadFormSchema } = await import("@/utils/leadFormSchema");
 export async function POST(req: NextRequest) {
   const { buyers } = await req.json();

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import {prisma} from "@/lib/prisma";
 import { mapBHK, mapTimeline } from "@/utils/map";
 import { leadFormSchema } from "@/utils/leadFormSchema";
 
