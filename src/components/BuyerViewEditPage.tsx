@@ -95,14 +95,14 @@ export default function BuyerViewEditPage() {
       </div>
     );
 
-  console.debug("Rendering BuyerViewEditPage with buyer:", JSON.stringify(buyer) === JSON.stringify(form) ? "No changes" : "Has changes");
-
   return (
     <Card shadow="sm" padding="lg" radius="md" style={{ maxWidth: 800, margin: "2rem auto" }}>
       <Group justify="apart" mb="md">
         <Title order={2}>Buyer Details</Title>
         <Button
           onClick={() => {
+            console.log(JSON.stringify(form) === JSON.stringify(buyer))
+            console.log(buyer.fullName, form.fullName)
             if (isEditing) {
               if (JSON.stringify(form) !== JSON.stringify(buyer)) {
                 setShowConfirm(true);

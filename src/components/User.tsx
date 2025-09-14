@@ -9,12 +9,14 @@ export default function SelectedUserDisplay() {
   const [user, setUser] = useState<any | null>(null);
   const [users, setUsers] = useState<any[]>([]);
   const [opened, setOpened] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = Cookies.get("token");
     if (!token) return;
     try {
       const [id, role] = Buffer.from(token, "base64").toString().split(":");
+      setLoading(true);
       fetch(`/api/users?id=${id}`)
         .then((res) => res.json())
         .then((data) => {
@@ -22,13 +24,12 @@ export default function SelectedUserDisplay() {
             setUser(data.users[0]);
           }
         });
+      setLoading(false);
       fetch("/api/users")
         .then((res) => res.json())
         .then((data) => setUsers(data.users || []));
     } catch {}
-  }, []);
-
-  if (!user) return null;
+  }, [])
 
   return (
     <Menu shadow="md" width={240} opened={opened} onChange={setOpened}>
@@ -36,23 +37,23 @@ export default function SelectedUserDisplay() {
         <Button variant="subtle" style={{ padding: 0, background: "none" }}>
           <Group gap="xs">
             <Avatar radius="xl" size={30}>
-              {user.name[0]}
+              {!loading ? user?.name[0] : 'J'}
             </Avatar>
             <div className="flex flex-col" style={{ textAlign: "left" }}>
-              <Text size="sm">{user.name}</Text>
+              <Text size="sm">{!loading ? "user" : user?.name[0] || "user"}</Text>
               <Text size="xs" color="dimmed">
-                {user.role}
+                {loading ? "Loading..." : user?.role || "AGENT"}
               </Text>
             </div>
           </Group>
         </Button>
       </Menu.Target>
       <Menu.Dropdown>
-        {users.filter((u) => u.id !== user.id).length === 0 ? (
+        {users.filter((u) => u?.id !== user?.id).length === 0 ? (
           <Menu.Item disabled>No other users</Menu.Item>
         ) : (
           users
-            .filter((u) => u.id !== user.id)
+            .filter((u) => u.id !== user?.id)
             .map((u) => (
               <Menu.Item
                 key={u.id}
@@ -76,7 +77,7 @@ export default function SelectedUserDisplay() {
             ))
         )}
         <Divider my="xs" />
-        <Menu.Item color="blue" onClick={() => (router.push('/users/new'))}>
+        <Menu.Item color="blue" onClick={() => router.push("/users/new")}>
           <p className="text-sm">Create New User</p>
         </Menu.Item>
       </Menu.Dropdown>

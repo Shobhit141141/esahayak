@@ -149,6 +149,7 @@ export default function BuyersTable() {
   const { userId: loggedInUserId } = useUser();
   return (
     <div className="">
+    
       <Group mb="md" gap="md" wrap="wrap" align="end">
         <TextInput label="Search" placeholder="Name, Phone, Email" value={searchValue} onChange={(e) => setSearchValue(e.target.value)} />
         <Select label="City" placeholder="Select city" data={CITY_OPTIONS} value={filters.city} onChange={(v) => setFilters((f) => ({ ...f, city: v || "" }))} clearable />
@@ -233,8 +234,8 @@ export default function BuyersTable() {
                 </Table.Td>
                 <Table.Td>{new Date(buyer.updatedAt).toLocaleString()}</Table.Td>
                 <Table.Td>
-                  <Button size="xs" variant="light" color="violet" component="a" href={`/buyers/${buyer.id}`} disabled={buyer.createdBy !== loggedInUserId}>
-                    View / Edit
+                  <Button size="xs" variant="light" color="violet" component="a" href={`/buyers/${buyer.id}`}>
+                    {buyer.ownerId == loggedInUserId ? "View / Edit" : "View"}
                   </Button>
                 </Table.Td>
               </Table.Tr>

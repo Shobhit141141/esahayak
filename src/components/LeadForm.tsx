@@ -37,12 +37,11 @@ export default function LeadForm({ mode = "create", initialData, onSave }: LeadF
   const [tagInput, setTagInput] = useState("");
 
   const handleChange = useCallback((field: keyof LeadFormSchemaType, value: any) => {
-    setForm((prev) => {
-      if (field === "propertyType" && value !== "Apartment" && value !== "Villa") {
-        return { ...prev, [field]: value, bhk: null };
-      }
-      return { ...prev, [field]: value };
-    });
+    setForm((prev) => ({
+      ...prev,
+      [field]: value,
+      ...(field === "propertyType" && value !== "Apartment" && value !== "Villa" ? { bhk: "" } : {}),
+    }));
   }, []);
 
   const validateForm = (data: LeadFormSchemaType) => {
@@ -175,7 +174,7 @@ export default function LeadForm({ mode = "create", initialData, onSave }: LeadF
   };
 
   return (
-    <div className="shadow-sm p-6 rounded-md bg-transparent w-full max-w-2xl mx-auto">
+    <div className="shadow-sm p-6 rounded-md bg-transparent w-full max-w-2xl mx-auto pt-20 ">
       <Title order={2} mb="md">
         {mode === "create" ? "Create New Lead" : "Edit Lead"}
       </Title>
