@@ -21,6 +21,8 @@ export const metadata: Metadata = {
 
 const theme = createTheme({
   primaryColor: "violet",
+  black: "#000",
+  white: "#fff",
 });
 export default function RootLayout({
   children,
@@ -29,18 +31,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" {...mantineHtmlProps}>
-      <head>
-        <ColorSchemeScript />
-      </head>
-      <body style={{ fontFamily: getRaleway.style.fontFamily }} className="antialiased">
-        <UserProvider>
-          <MantineProvider theme={theme} defaultColorScheme="dark">
+      <MantineProvider theme={theme} defaultColorScheme="dark">
+        <head>
+          <ColorSchemeScript />
+        </head>
+        <body style={{ fontFamily: getRaleway.style.fontFamily }} className="antialiased">
+          <UserProvider>
             <ToastContainer theme="colored" />
             <Navbar />
             {children}
-          </MantineProvider>
-        </UserProvider>
-      </body>
+          </UserProvider>
+        </body>
+      </MantineProvider>
     </html>
   );
 }

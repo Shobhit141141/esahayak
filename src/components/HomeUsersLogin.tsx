@@ -1,3 +1,4 @@
+"use client";
 import { useUser } from "../context/UserContext";
 import { FaCheckCircle } from "react-icons/fa";
 import { Card, Title, Button, Group, Loader, Text, Avatar, Badge, Divider, useComputedColorScheme } from "@mantine/core";
@@ -5,10 +6,12 @@ import { HiInformationCircle } from "react-icons/hi";
 import { FaCloudMoon, FaPeopleGroup } from "react-icons/fa6";
 import { BsClipboardDataFill } from "react-icons/bs";
 import { GrDocumentCsv } from "react-icons/gr";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 export default function HomeUsersLogin() {
   const { users, loading, userId } = useUser();
-
+  const router = useRouter();
   const computedColorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: true,
   });
@@ -30,11 +33,14 @@ export default function HomeUsersLogin() {
         alert(data.error || "Login failed");
       }
     } catch (err) {
-      alert("Login error");
+      toast.error("Login error");
+      console.error("Login error:", err);
     }
   };
+
+ 
   return (
-    <div className="flex flex-col-reverse md:flex-row w-full min-h-screen px-8 md:px-12 items-center justify-evenly gap-12 py-14">
+    <div className="flex flex-col-reverse md:flex-row w-full min-h-screen px-8 md:px-12 items-center justify-evenly gap-12 py-10">
       {/* Left Section: Image + Features */}
       <div className="flex flex-col items-center w-full md:w-1/2">
         <img src="/db.png" alt="DB" className="w-3/4 h-auto object-contain" />
@@ -82,7 +88,7 @@ export default function HomeUsersLogin() {
                     {u.name[0]}
                   </Avatar>
                   <span>{u.name}</span>
-                  {userId === u.id && <FaCheckCircle color="green" title="Selected" />}
+                  {userId == u.id && <FaCheckCircle color="green" title="Selected" />}
                 </div>
                 <Badge color={u.role === "ADMIN" ? "orange" : "yellow"} variant="filled" size="sm" radius="sm">
                   {u.role}

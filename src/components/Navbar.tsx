@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@mantine/core";
 import { useMantineColorScheme, useComputedColorScheme } from "@mantine/core";
 import { DarkModeSwitch } from "react-toggle-dark-mode";
-import SelectedUserDisplay from "./User";
+import SelectedUserDisplay from "./SelectedUser";
 import { WiMoonAltFirstQuarter } from "react-icons/wi";
 import { IoPersonAddSharp } from "react-icons/io5";
 import { AiFillHome } from "react-icons/ai";
@@ -50,7 +50,9 @@ export default function Navbar() {
         <div className="flex items-center space-x-2 md:hidden">
           <SelectedUserDisplay />
 
-          <DarkModeSwitch checked={colorScheme === "dark"} onChange={toggleColorScheme} size={20} />
+          <div className="ml-2" onClick={toggleColorScheme}>
+            <WiMoonAltFirstQuarter size={26} />
+          </div>
           <button onClick={() => setIsOpen(!isOpen)} className="text-gray-700 dark:text-gray-200 focus:outline-none">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {isOpen ? (
@@ -67,15 +69,7 @@ export default function Navbar() {
       {isOpen && (
         <div className={`${colorScheme === "dark" ? "bg-gray-800" : "bg-white"} md:hidden px-4 pb-4 space-y-2`}>
           {navLinks.map((link) => (
-            <Button
-              key={link.href}
-              component={Link}
-              href={link.href}
-              variant="subtle"
-              fullWidth
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-1"
-            >
+            <Button key={link.href} component={Link} href={link.href} variant="subtle" fullWidth onClick={() => setIsOpen(false)} className="flex items-center gap-1">
               {link.icon} {link.label}
             </Button>
           ))}

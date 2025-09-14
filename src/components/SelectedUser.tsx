@@ -16,11 +16,12 @@ export default function SelectedUserDisplay() {
 
   return (
     <Menu shadow="md" width={240} opened={opened} onChange={setOpened}>
+      
       <Menu.Target>
         <Button variant="subtle" style={{ padding: 0, background: "none" }}>
           <Group gap="xs">
             <Avatar radius="xl" size={30} variant="filled" color="violet">
-              {loading ? user?.name[0] : "J"}
+              {loading ? user?.name.slice(0, 1) : "NA"}
             </Avatar>
             <div className="flex flex-col" style={{ textAlign: "left" }}>
               <Text size="sm">{loading ? "user" : user?.name || "none"}</Text>

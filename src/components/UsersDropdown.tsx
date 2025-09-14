@@ -1,5 +1,4 @@
 "use client";
-import { useEffect, useState } from "react";
 import { Menu, Button, Group, Text } from "@mantine/core";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";

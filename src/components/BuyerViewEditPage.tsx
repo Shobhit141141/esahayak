@@ -2,13 +2,31 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useUser } from "../context/UserContext";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Card, Title, Button, Group, Loader, Text, Divider, Badge, CopyButton, ActionIcon, Modal, Collapse, Stack, Avatar } from "@mantine/core";
 import { toast } from "react-toastify";
-import { MdPerson, MdPhone, MdLocationCity, MdHome, MdAttachMoney, MdAccessTime, MdSource, MdNotes, MdTag, MdExpandLess, MdExpandMore, MdAdd, MdEdit, MdCancel } from "react-icons/md";
+import {
+  MdPerson,
+  MdPhone,
+  MdLocationCity,
+  MdHome,
+  MdAttachMoney,
+  MdAccessTime,
+  MdSource,
+  MdNotes,
+  MdTag,
+  MdExpandLess,
+  MdExpandMore,
+  MdAdd,
+  MdEdit,
+  MdCancel,
+} from "react-icons/md";
 import { bhkToLabel, timelineToLabel } from "../utils/map";
 import { LeadForm, LeadFormRef } from "./LeadForm";
 import { LuCopy, LuCopyCheck } from "react-icons/lu";
+import { BiTrash } from "react-icons/bi";
+import AuthBoundary from "./AuthBoundary";
+import { FaUserGear } from "react-icons/fa6";
 
 function FieldItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number | null | undefined }) {
   if (!value) return null;
@@ -33,17 +51,23 @@ function FieldItem({ icon, label, value }: { icon: React.ReactNode; label: strin
 }
 
 export default function BuyerViewEditPage() {
-  const { userId, user } = useUser();
+  const { userId, user, token } = useUser();
   const { id } = useParams();
   const [buyer, setBuyer] = useState<any>(null);
+  const [createdBy, setCreatedBy] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const router = useRouter();
   const [expanded, setExpanded] = useState(false);
 
   const leadFormRef = useRef<LeadFormRef>(null);
+  if (!token) {
+    return <AuthBoundary loading={loading} />;
+  }
 
   const fetchBuyer = async () => {
     setLoading(true);
@@ -60,6 +84,7 @@ export default function BuyerViewEditPage() {
         }
 
         setBuyer(data.buyer);
+        setCreatedBy(data.createdBy);
         setHistory(data.history || []);
         setLoading(false);
       })
@@ -68,6 +93,22 @@ export default function BuyerViewEditPage() {
         toast.error("Failed to load buyer data");
         setLoading(false);
       });
+  };
+
+  const handleDelete = async () => {
+    setShowDeleteConfirm(false);
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/buyers/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        throw new Error("Failed to delete buyer");
+      }
+      toast.success("Buyer deleted");
+      router.push("/buyers");
+    } catch (error) {
+      toast.error("Failed to delete buyer");
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -111,25 +152,41 @@ export default function BuyerViewEditPage() {
 
   const canEdit = buyer?.creatorId === userId || user?.role === "ADMIN";
   return (
-    <div className=" w-full max-w-2xl mx-auto pt-20 p-6">
+    <Card className=" w-full max-w-2xl mx-auto p-6" mt={"100px"}>
       <div className="mb-6 flex items-center justify-between">
         {<Title order={2}>Buyer Details</Title>}
-        {canEdit && (
-          <Button
-            onClick={() => {
-              if (isEditing) {
-                handleCancelClick();
-              } else {
-                setIsEditing(true);
-              }
-            }}
-            disabled={saving}
-            color="violet"
-            leftSection={isEditing ? <MdCancel size={18} /> : <MdEdit size={18} />}
-          >
-            {isEditing ? "Cancel" : "Edit"}
-          </Button>
-        )}
+        <div className="flex gap-3">
+          {canEdit && (
+            <Button
+              onClick={() => {
+                if (isEditing) {
+                  handleCancelClick();
+                } else {
+                  setIsEditing(true);
+                }
+              }}
+              disabled={saving}
+              color="violet"
+              leftSection={isEditing ? <MdCancel size={18} /> : <MdEdit size={18} />}
+            >
+              {isEditing ? "Cancel" : "Edit"}
+            </Button>
+          )}
+
+          {(user?.role === "ADMIN" || buyer.creatorId == userId) && (
+            <Button
+              size="sm"
+              variant="filled"
+              color="red"
+              onClick={async () => {
+                setShowDeleteConfirm(true);
+              }}
+              leftSection={<BiTrash size={18} />}
+            >
+              Delete
+            </Button>
+          )}
+        </div>
       </div>
 
       {!isEditing ? (
@@ -141,6 +198,11 @@ export default function BuyerViewEditPage() {
             <Title order={3}>{buyer.fullName}</Title>
           </Group>
 
+        <div className="flex justify-start items-center gap-2 mb-4">
+          <p>Created By :</p>
+            <div className="bg-orange-500/20 w-fit rounded-sm px-4 py-1 flex items-center gap-2"><FaUserGear size={18} /> {createdBy?.name}</div>
+        </div>
+
           <FieldItem icon={<MdPerson />} label="Email" value={buyer.email} />
           <FieldItem icon={<MdPhone />} label="Phone" value={buyer.phone} />
           <FieldItem icon={<MdLocationCity />} label="City" value={buyer.city} />
@@ -150,7 +212,6 @@ export default function BuyerViewEditPage() {
           <FieldItem icon={<MdAccessTime />} label="Timeline" value={timelineToLabel(buyer.timeline)} />
           <FieldItem icon={<MdSource />} label="Source" value={buyer.source} />
           <FieldItem icon={<MdNotes />} label="Notes" value={buyer.notes} />
-
           <div>
             <Group gap="xs" align="center" mb="md">
               <MdTag size={18} />
@@ -404,6 +465,25 @@ export default function BuyerViewEditPage() {
           </Button>
         </Group>
       </Modal>
-    </div>
+
+      <Modal opened={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="Delete Buyer?" centered>
+        <Text>Are you sure you want to delete this buyer?</Text>
+        <Group justify="right" mt="md">
+          <Button variant="default" onClick={() => setShowDeleteConfirm(false)}>
+            Cancel
+          </Button>
+          <Button
+            color="red"
+            onClick={async () => {
+              // setLoading(true);
+              await handleDelete();
+              setShowDeleteConfirm(false);
+            }}
+          >
+            Delete
+          </Button>
+        </Group>
+      </Modal>
+    </Card>
   );
 }

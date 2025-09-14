@@ -17,7 +17,12 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: num
     include: { changedByUser: true },
   });
 
-  return NextResponse.json({ buyer, history });
+  const createdBy = await prisma.user.findUnique({
+    where: { id: buyer?.creatorId },
+    select: { id: true, name: true, email: true, role: true },
+  });
+
+  return NextResponse.json({ buyer, history, createdBy });
 }
 
 export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
@@ -114,3 +119,20 @@ const mapBuyerToClientFormat = (buyer: any) => {
     timeline: timelineToLabel(buyer.timeline),
   };
 };
+
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
+  const userId = req.cookies.get("user-id")?.value;
+  const role = req.cookies.get("role")?.value;
+  if (!userId || !role) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const buyer = await prisma.buyer.findUnique({ where: { id: Number(id) } });
+  if (!buyer) return NextResponse.json({ error: "Buyer not found" }, { status: 404 });
+  if (role !== "ADMIN" && String(buyer.creatorId) !== String(userId)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  await prisma.buyerHistory.deleteMany({ where: { buyerId: Number(id) } });
+  await prisma.buyer.delete({ where: { id: Number(id) } });
+  return NextResponse.json({ success: true });
+}

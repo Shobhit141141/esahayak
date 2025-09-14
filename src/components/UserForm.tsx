@@ -39,7 +39,7 @@ export default function UserForm() {
       return;
     }
     setLoading(true);
-    const res = await fetch("/api/users", {
+    const res = await fetch("/api/users/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useUser } from "../context/UserContext";
-import { Table, TextInput, Select, Button, Group, Pagination, Loader, Badge } from "@mantine/core";
+import { Table, TextInput, Select, Button, Group, Pagination, Loader, Badge, Text } from "@mantine/core";
 import { useState as useReactState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, TIMELINE_OPTIONS } from "../utils/leadOptions";
@@ -12,6 +12,7 @@ import BuyersImportExport from "./BuyersImportExport";
 import { toast } from "react-toastify";
 import { Controller, useForm } from "react-hook-form";
 import { fields } from "@hookform/resolvers/ajv/src/__tests__/__fixtures__/data.js";
+import AuthBoundary from "./AuthBoundary";
 
 const STATUS_OPTIONS = [
   { value: "New", label: "New" },
@@ -42,7 +43,7 @@ type Buyer = {
 export default function BuyersTable() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [buyers, setBuyers] = useState<Buyer[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
@@ -154,7 +155,7 @@ export default function BuyersTable() {
     },
   });
 
-  const { userId: loggedInUserId, user } = useUser();
+  const { userId: loggedInUserId, user, token } = useUser();
   const [statusUpdating, setStatusUpdating] = useReactState<string | null>(null);
   const handleStatusChange = async (buyerId: string, newStatus: string) => {
     setStatusUpdating(buyerId);
@@ -184,6 +185,29 @@ export default function BuyersTable() {
         setLoading(false);
       });
   };
+
+   if (!token) {
+      return (
+       <AuthBoundary loading={loading} />
+      );
+    }
+
+  // if (loading) {
+  //   return (
+  //     <div className="flex items-center justify-center h-full">
+  //       <Loader size="md" />
+  //     </div>
+  //   );
+  // }
+
+  // if (!loading && buyers.length === 0) {
+  //   return (
+  //     <div className="flex items-center justify-center h-full">
+  //       <p>No buyers found 😔</p>
+  //     </div>
+  //   );
+  // }
+
   return (
     <div className="">
       <Group mb="md" gap="md" wrap="wrap" align="end">
@@ -193,7 +217,13 @@ export default function BuyersTable() {
             control={control}
             defaultValue=""
             render={({ field }) => (
-              <TextInput label="Search" placeholder="Name, Phone, Email" {...field} variant="filled" rightSection={<MdClear className="cursor-pointer" onClick={() => field.onChange("")} size={16} />} />
+              <TextInput
+                label="Search"
+                placeholder="Name, Phone, Email"
+                {...field}
+                variant="filled"
+                rightSection={<MdClear className="cursor-pointer" onClick={() => field.onChange("")} size={16} />}
+              />
             )}
           />
           <Controller
@@ -207,7 +237,15 @@ export default function BuyersTable() {
           />
         </form>
 
-        <Select label="City" placeholder="Select city" data={CITY_OPTIONS} value={filters.city} onChange={(v) => setFilters((f) => ({ ...f, city: v || "" }))} clearable variant="filled" />
+        <Select
+          label="City"
+          placeholder="Select city"
+          data={CITY_OPTIONS}
+          value={filters.city}
+          onChange={(v) => setFilters((f) => ({ ...f, city: v || "" }))}
+          clearable
+          variant="filled"
+        />
         <Select
           label="Property Type"
           placeholder="Select property type"
@@ -248,23 +286,15 @@ export default function BuyersTable() {
         >
           Clear Filters
         </Button>
-        <BuyersImportExport filters={{ ...filters, pageSize }} onImport={fetchBuyers}/>
+        <BuyersImportExport filters={{ ...filters, pageSize }} onImport={fetchBuyers} />
       </Group>
       {loading ? (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-        >
+        <div className="flex justify-center py-10">
           <Loader size="md" />
+        </div>
+      ) : buyers.length === 0 ? (
+        <div className="flex justify-center py-10">
+          <p>No buyers found 😔</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -308,7 +338,7 @@ export default function BuyersTable() {
                   <Table.Td>{timelineToLabel(buyer.timeline)}</Table.Td>
                   <Table.Td>
                     <Badge color={statusColors[buyer.status]}>{buyer.status}</Badge>
-                    {buyer.creatorId == loggedInUserId && (
+                    {buyer.creatorId == loggedInUserId || user?.role === "ADMIN" && (
                       <Select
                         value={buyer.status}
                         data={STATUS_OPTIONS}
@@ -323,9 +353,11 @@ export default function BuyersTable() {
                   </Table.Td>
                   <Table.Td>{new Date(buyer.updatedAt).toLocaleString()}</Table.Td>
                   <Table.Td>
-                    <Button size="xs" variant="filled" color="violet" component="a" href={`/buyers/${buyer.id}`}>
-                      {buyer.creatorId == loggedInUserId ? "View / Edit" : "View"}
-                    </Button>
+                    <Group gap="xs">
+                      <Button size="xs" variant="filled" color="violet" component="a" href={`/buyers/${buyer.id}`}>
+                        {buyer.creatorId == loggedInUserId ? "View / Edit" : "View"}
+                      </Button>
+                    </Group>
                   </Table.Td>
                 </Table.Tr>
               ))}

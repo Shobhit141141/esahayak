@@ -28,7 +28,7 @@ export default function UsersListPage() {
               <Table.Tr key={user.id}>
                 <Table.Td>{user.name}</Table.Td>
                 <Table.Td>{user.email}</Table.Td>
-                <Table.Td>{user.role}</Table.Td>
+                <Table.Td>{user?.role}</Table.Td>
               </Table.Tr>
             ))}
           </Table.Tbody>
