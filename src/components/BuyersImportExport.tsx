@@ -8,22 +8,21 @@ import { PiExportBold } from "react-icons/pi";
 import { BiExport, BiImport } from "react-icons/bi";
 import { FaFileCsv } from "react-icons/fa6";
 
-const HEADERS = [
-  "fullName",
-  "email",
-  "phone",
-  "city",
-  "propertyType",
-  "bhk",
-  "purpose",
-  "budgetMin",
-  "budgetMax",
-  "timeline",
-  "source",
-  "notes",
-  "tags",
-  "status",
-];
+const HEADERS = ["fullName", "email", "phone", "city", "propertyType", "bhk", "purpose", "budgetMin", "budgetMax", "timeline", "source", "notes", "tags", "status"];
+
+function transformRow(row: any) {
+  return {
+    ...row,
+    budgetMin: row.budgetMin ? Number(row.budgetMin) : undefined,
+    budgetMax: row.budgetMax ? Number(row.budgetMax) : undefined,
+    tags: row.tags
+      ? String(row.tags)
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : [],
+  };
+}
 
 function validateRow(row: any, idx: number) {
   const cityValues = CITY_OPTIONS.map((o) => o.value);
@@ -34,15 +33,17 @@ function validateRow(row: any, idx: number) {
   const bhkValues = BHK_OPTIONS.map((o) => o.value);
   const statusValues = ["New", "Qualified", "Contacted", "Visited", "Negotiation", "Converted", "Dropped"];
 
-  if (!cityValues.includes(row.city)) return `Row ${idx + 1}: Unknown city`;
-  if (!propertyTypeValues.includes(row.propertyType)) return `Row ${idx + 1}: Unknown propertyType`;
-  if (row.bhk && !bhkValues.includes(row.bhk)) return `Row ${idx + 1}: Unknown bhk`;
-  if (!purposeValues.includes(row.purpose)) return `Row ${idx + 1}: Unknown purpose`;
-  if (!timelineValues.includes(row.timeline)) return `Row ${idx + 1}: Unknown timeline`;
-  if (!sourceValues.includes(row.source)) return `Row ${idx + 1}: Unknown source`;
-  if (!statusValues.includes(row.status)) return `Row ${idx + 1}: Unknown status`;
+  const transformed = transformRow(row);
 
-  const result = leadFormSchema.safeParse(row);
+  if (!cityValues.includes(transformed.city)) return `Row ${idx + 1}: Unknown city`;
+  if (!propertyTypeValues.includes(transformed.propertyType)) return `Row ${idx + 1}: Unknown propertyType`;
+  if (transformed.bhk && !bhkValues.includes(transformed.bhk)) return `Row ${idx + 1}: Unknown bhk`;
+  if (!purposeValues.includes(transformed.purpose)) return `Row ${idx + 1}: Unknown purpose`;
+  if (!timelineValues.includes(transformed.timeline)) return `Row ${idx + 1}: Unknown timeline`;
+  if (!sourceValues.includes(transformed.source)) return `Row ${idx + 1}: Unknown source`;
+  if (!statusValues.includes(transformed.status)) return `Row ${idx + 1}: Unknown status`;
+
+  const result = leadFormSchema.safeParse(transformed);
   if (!result.success) return `Row ${idx + 1}: ${result.error.issues.map((e) => e.message).join(", ")}`;
   return null;
 }
@@ -85,7 +86,7 @@ export default function BuyersImportExport({ filters }: { filters: any }) {
         rows.forEach((row, idx) => {
           const err = validateRow(row, idx);
           if (err) errors.push(err);
-          else validRows.push(row);
+          else validRows.push(transformRow(row));
         });
         setImportErrors(errors);
         if (validRows.length > 0) {
@@ -109,18 +110,18 @@ export default function BuyersImportExport({ filters }: { filters: any }) {
       <Button onClick={() => setImportModal(true)} variant="light" color="blue" leftSection={<BiImport size={16} />}>
         Import CSV
       </Button>
-      <Modal opened={importModal} onClose={() => setImportModal(false)} title="Import Buyers CSV" size="lg" centered >
-        <FileInput
-          label="CSV File"
-          accept=".csv"
-          placeholder="Upload CSV file"
-          onChange={handleImport}
-          disabled={importLoading}
-          leftSection={<FaFileCsv size={16} />}
-        />
-        {importLoading && <Loader mt="md" />}
+      <Modal opened={importModal} onClose={() => {
+        
+        setImportModal(false);
+        setImportErrors([]);
+
+      }} title="Import Buyers CSV" size="lg" centered>
+        <FileInput label="CSV File" accept=".csv" placeholder="Upload CSV file" onChange={handleImport} disabled={importLoading} leftSection={<FaFileCsv size={16} />} />
+        {!importLoading && <div className="w-full flex justify-center h-[50px]">
+          <Loader mt="md" />
+          </div>}
         {importErrors.length > 0 && (
-          <Table mt="md" striped withTableBorder>
+          <Table mt="md" striped withTableBorder highlightOnHover>
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>Row Error</Table.Th>
