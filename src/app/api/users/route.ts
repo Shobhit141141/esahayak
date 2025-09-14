@@ -7,11 +7,13 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const role = req.cookies.get("role")?.value;
-
-  console.log("Role from cookies:", role);
-  if (role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const usersCount = await prisma.user.count();
+  if (usersCount > 0) {
+    const role = req.cookies.get("role")?.value;
+    console.log(role)
+    if (role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
   }
   const body = await req.json();
   try {

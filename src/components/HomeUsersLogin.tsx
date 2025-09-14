@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useUser } from "../context/UserContext";
 import { FaCheckCircle } from "react-icons/fa";
 import { Card, Title, Button, Group, Loader, Text, Avatar, Badge, Divider, useComputedColorScheme } from "@mantine/core";
@@ -8,17 +7,7 @@ import { BsClipboardDataFill } from "react-icons/bs";
 import { GrDocumentCsv } from "react-icons/gr";
 
 export default function HomeUsersLogin() {
-  const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/users")
-      .then((res) => res.json())
-      .then((data) => {
-        setUsers(data.users || []);
-        setLoading(false);
-      });
-  }, []);
+  const { users, loading, userId } = useUser();
 
   const computedColorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: true,
@@ -44,9 +33,8 @@ export default function HomeUsersLogin() {
       alert("Login error");
     }
   };
-  const { userId } = useUser();
   return (
-    <div className="flex flex-col-reverse md:flex-row w-full min-h-screen px-8 md:px-12 items-center justify-evenly gap-12 pt-14">
+    <div className="flex flex-col-reverse md:flex-row w-full min-h-screen px-8 md:px-12 items-center justify-evenly gap-12 py-14">
       {/* Left Section: Image + Features */}
       <div className="flex flex-col items-center w-full md:w-1/2">
         <img src="/db.png" alt="DB" className="w-3/4 h-auto object-contain" />
@@ -104,7 +92,7 @@ export default function HomeUsersLogin() {
           </div>
         )}
 
-        <Divider my="lg" label="Last 5 Changes History" labelPosition="center" />
+        <Divider my="lg" label="Hassle Free Login" labelPosition="center" />
 
         {/* Info Section */}
         <div className=" text-center space-y-4">

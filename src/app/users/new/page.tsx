@@ -4,8 +4,8 @@ import { useUser } from "../../../context/UserContext";
 import { Button, Card, Text, Title } from "@mantine/core";
 
 export default function NewUserPage() {
-  const { user } = useUser();
-  if (user?.role !== "ADMIN") {
+  const { user, users } = useUser();
+  if (users.length !== 0 && user?.role !== "ADMIN") {
     return (
       <div className="pt-20 flex justify-center">
         <Card shadow="sm" p="xl" radius="md" mt={40} mx="auto" maw={400}>

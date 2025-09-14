@@ -7,9 +7,11 @@ interface UserContextType {
   user: any | null;
   users: any[];
   loading: boolean;
+  setUser: (user: any) => void;
+  setUsers: (users: any[]) => void;
 }
 
-const UserContext = createContext<UserContextType>({ userId: null, user: null, users: [], loading: true });
+const UserContext = createContext<UserContextType>({ userId: null, user: null, users: [], loading: true, setUser: () => {}, setUsers: () => {} });
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const [userId, setUserId] = useState<string | null>(null);
@@ -18,17 +20,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = Cookies.get("token");
-    const username = Cookies.get("username");
-    const role = Cookies.get("role");
-    setLoading(true);
-    fetch("/api/users")
-      .then((res) => res.json())
-      .then((allUsers) => {
-        setUsers(allUsers.users || []);
+    const fetchUsers = async () => {
+      const token = Cookies.get("token");
+      const username = Cookies.get("username");
+      const role = Cookies.get("role");
+      setLoading(true);
+      try {
+        const res = await fetch("/api/users");
+        if (!res.ok) throw new Error("Failed to fetch users");
+        const data = await res.json();
+        setUsers(data.users || []);
         if (token) {
           const id = Buffer.from(token, "base64").toString().split(":")[0];
-          const matchedUser = allUsers.users?.find((u: any) => String(u.id) === String(id));
+          const matchedUser = data.users?.find((u: any) => String(u.id) === String(id));
           setUser(matchedUser || { id, name: username, role });
           setUserId(id);
         } else {
@@ -36,10 +40,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
           setUserId(null);
         }
         setLoading(false);
-      });
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        setLoading(false);
+      }
+    };
+    fetchUsers();
   }, [Cookies.get("token"), Cookies.get("username"), Cookies.get("role")]);
 
-  return <UserContext.Provider value={{ userId, user, users, loading }}>{children}</UserContext.Provider>;
+  return <UserContext.Provider value={{ userId, user, users, loading, setUser, setUsers }}>{children}</UserContext.Provider>;
 }
 
 export function useUser() {

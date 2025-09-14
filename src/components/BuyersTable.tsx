@@ -65,15 +65,22 @@ export default function BuyersTable() {
     router.replace(`/buyers?${params.toString()}`);
   }, [filters, page]);
 
+  const fetchBuyers = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/buyers?${new URLSearchParams({ ...filters, page: String(page), pageSize: String(pageSize) })}`);
+      const data = await res.json();
+      setBuyers(data.buyers || []);
+      setTotal(data.total || 0);
+    } catch (error) {
+      console.error("Error fetching buyers:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/buyers?${new URLSearchParams({ ...filters, page: String(page), pageSize: String(pageSize) })}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setBuyers(data.buyers || []);
-        setTotal(data.total || 0);
-        setLoading(false);
-      });
+    fetchBuyers();
   }, [filters, page, pageSize]);
 
   const sortedBuyers = [...buyers].sort((a, b) => {
@@ -84,7 +91,6 @@ export default function BuyersTable() {
       aValue = a.budgetMin ?? 0;
       bValue = b.budgetMin ?? 0;
     } else if (field === "bhk") {
-      // Map BHK to a sortable number
       const bhkOrder: Record<string, number> = {
         Studio: 0,
         STUDIO: 0,
@@ -182,7 +188,14 @@ export default function BuyersTable() {
     <div className="">
       <Group mb="md" gap="md" wrap="wrap" align="end">
         <form onSubmit={handleSubmit((data) => setFilters((f) => ({ ...f, search: data.search })))} className="flex flex-row items-end gap-2">
-          <Controller name="search" control={control} defaultValue="" render={({ field }) => <TextInput label="Search" placeholder="Name, Phone, Email" {...field} />} />
+          <Controller
+            name="search"
+            control={control}
+            defaultValue=""
+            render={({ field }) => (
+              <TextInput label="Search" placeholder="Name, Phone, Email" {...field} variant="filled" rightSection={<MdClear className="cursor-pointer" onClick={() => field.onChange("")} size={16} />} />
+            )}
+          />
           <Controller
             name="search"
             control={control}
@@ -194,13 +207,14 @@ export default function BuyersTable() {
           />
         </form>
 
-        <Select label="City" placeholder="Select city" data={CITY_OPTIONS} value={filters.city} onChange={(v) => setFilters((f) => ({ ...f, city: v || "" }))} clearable />
+        <Select label="City" placeholder="Select city" data={CITY_OPTIONS} value={filters.city} onChange={(v) => setFilters((f) => ({ ...f, city: v || "" }))} clearable variant="filled" />
         <Select
           label="Property Type"
           placeholder="Select property type"
           data={PROPERTY_TYPE_OPTIONS}
           value={filters.propertyType}
           onChange={(v) => setFilters((f) => ({ ...f, propertyType: v || "" }))}
+          variant="filled"
           clearable
         />
         <Select
@@ -209,6 +223,7 @@ export default function BuyersTable() {
           data={STATUS_OPTIONS}
           value={filters.status}
           onChange={(v) => setFilters((f) => ({ ...f, status: v || "" }))}
+          variant="filled"
           clearable
         />
         <Select
@@ -217,6 +232,7 @@ export default function BuyersTable() {
           data={TIMELINE_OPTIONS}
           value={filters.timeline}
           onChange={(v) => setFilters((f) => ({ ...f, timeline: v || "" }))}
+          variant="filled"
           clearable
         />
 
@@ -232,7 +248,7 @@ export default function BuyersTable() {
         >
           Clear Filters
         </Button>
-        <BuyersImportExport filters={{ ...filters, pageSize }} />
+        <BuyersImportExport filters={{ ...filters, pageSize }} onImport={fetchBuyers}/>
       </Group>
       {loading ? (
         <div
@@ -307,7 +323,7 @@ export default function BuyersTable() {
                   </Table.Td>
                   <Table.Td>{new Date(buyer.updatedAt).toLocaleString()}</Table.Td>
                   <Table.Td>
-                    <Button size="xs" variant="light" color="violet" component="a" href={`/buyers/${buyer.id}`}>
+                    <Button size="xs" variant="filled" color="violet" component="a" href={`/buyers/${buyer.id}`}>
                       {buyer.creatorId == loggedInUserId ? "View / Edit" : "View"}
                     </Button>
                   </Table.Td>
@@ -328,6 +344,7 @@ export default function BuyersTable() {
             { value: "50", label: "50" },
           ]}
           value={String(pageSize)}
+          variant="filled"
           onChange={(v) => setPageSize(Number(v))}
         />
       </div>

@@ -2,21 +2,13 @@
 import { useEffect, useState } from "react";
 import { Table, Loader, Title, Button } from "@mantine/core";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/context/UserContext";
 
 export default function UsersListPage() {
-  const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
-  useEffect(() => {
-    fetch("/api/users")
-      .then((res) => res.json())
-      .then((data) => {
-        setUsers(data.users || []);
-        setLoading(false);
-      });
-  }, []);
+  const { users, user, loading } = useUser();
   return (
-    <div style={{ maxWidth: 700, margin: "2rem auto" }}>
+    <div style={{ maxWidth: 700, margin: "2rem auto" }} className="pt-20">
       <Title order={2} mb="md">
         All Users
       </Title>

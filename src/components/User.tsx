@@ -5,33 +5,14 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { IoAddCircle } from "react-icons/io5";
 import { FaCheckCircle } from "react-icons/fa";
+import { useUser } from "@/context/UserContext";
 
 export default function SelectedUserDisplay() {
   const router = useRouter();
-  const [user, setUser] = useState<any | null>(null);
-  const [users, setUsers] = useState<any[]>([]);
-  const [opened, setOpened] = useState(false);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const token = Cookies.get("token");
-    if (!token) return;
-    try {
-      const [id, role] = Buffer.from(token, "base64").toString().split(":");
-      setLoading(true);
-      fetch(`/api/users?id=${id}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.users && data.users.length > 0) {
-            setUser(data.users[0]);
-          }
-        });
-      setLoading(false);
-      fetch("/api/users")
-        .then((res) => res.json())
-        .then((data) => setUsers(data.users || []));
-    } catch {}
-  }, []);
+  const [opened, setOpened] = useState(false);
+
+  const { user, users, loading } = useUser();
 
   return (
     <Menu shadow="md" width={240} opened={opened} onChange={setOpened}>
@@ -39,12 +20,12 @@ export default function SelectedUserDisplay() {
         <Button variant="subtle" style={{ padding: 0, background: "none" }}>
           <Group gap="xs">
             <Avatar radius="xl" size={30} variant="filled" color="violet">
-              {!loading ? user?.name[0] : "J"}
+              {loading ? user?.name[0] : "J"}
             </Avatar>
             <div className="flex flex-col" style={{ textAlign: "left" }}>
-              <Text size="sm">{loading ? "user" : user?.name || "user"}</Text>
+              <Text size="sm">{loading ? "user" : user?.name || "none"}</Text>
               <Text size="xs" color="dimmed">
-                {loading ? "Loading..." : user?.role || "AGENT"}
+                {loading ? "Loading..." : user?.role || "none"}
               </Text>
             </div>
           </Group>

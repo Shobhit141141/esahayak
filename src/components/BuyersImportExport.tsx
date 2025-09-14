@@ -3,10 +3,9 @@ import { Button, Group, Table, Text, FileInput, Modal, Loader } from "@mantine/c
 import Papa from "papaparse";
 import { leadFormSchema } from "../utils/leadFormSchema";
 import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, PURPOSE_OPTIONS, TIMELINE_OPTIONS, SOURCE_OPTIONS, BHK_OPTIONS } from "../utils/leadOptions";
-import { TbFileExport, TbFileImport, TbFileTypeCsv } from "react-icons/tb";
-import { PiExportBold } from "react-icons/pi";
 import { BiExport, BiImport } from "react-icons/bi";
 import { FaFileCsv } from "react-icons/fa6";
+import { toast } from "react-toastify";
 
 const HEADERS = ["fullName", "email", "phone", "city", "propertyType", "bhk", "purpose", "budgetMin", "budgetMax", "timeline", "source", "notes", "tags", "status"];
 
@@ -48,7 +47,7 @@ function validateRow(row: any, idx: number) {
   return null;
 }
 
-export default function BuyersImportExport({ filters }: { filters: any }) {
+export default function BuyersImportExport({ filters, onImport }: { filters: any, onImport: () => void }) {
   const [importModal, setImportModal] = useState(false);
   const [importErrors, setImportErrors] = useState<string[]>([]);
   const [importLoading, setImportLoading] = useState(false);
@@ -95,7 +94,15 @@ export default function BuyersImportExport({ filters }: { filters: any }) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ buyers: validRows }),
           });
-          if (!res.ok) errors.push("Server error during import");
+          if (!res.ok) {
+            toast.error("Import failed. See errors.");
+            errors.push("Server error during import");
+          }
+        }
+        if (errors.length === 0) {
+          toast.success("Import successful");
+          setImportModal(false);
+          onImport();
         }
         setImportLoading(false);
       },
@@ -117,7 +124,7 @@ export default function BuyersImportExport({ filters }: { filters: any }) {
 
       }} title="Import Buyers CSV" size="lg" centered>
         <FileInput label="CSV File" accept=".csv" placeholder="Upload CSV file" onChange={handleImport} disabled={importLoading} leftSection={<FaFileCsv size={16} />} />
-        {!importLoading && <div className="w-full flex justify-center h-[50px]">
+        {importLoading && <div className="w-full flex justify-center h-[50px]">
           <Loader mt="md" />
           </div>}
         {importErrors.length > 0 && (

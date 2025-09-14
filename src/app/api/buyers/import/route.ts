@@ -25,30 +25,30 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await prisma.$transaction(
+    const createdBuyers = await prisma.$transaction(
       validBuyers.map((buyer: any) =>
         prisma.buyer.create({
           data: {
             ...buyer,
             creatorId: Number(userId),
-            tags: buyer.tags ? buyer.tags.join(",") : null,
+            tags: JSON.parse(buyer.tags || "[]"),
           },
         })
       )
     );
 
-    // also update buyerHistory for all
     await prisma.$transaction(
-      validBuyers.map((buyer: any) =>
+      createdBuyers.map((buyer: any, idx: number) =>
         prisma.buyerHistory.create({
           data: {
-            buyerId: buyer.id,
-            changedBy: Number(userId),
-            diff: { created: true, ...buyer },
+            buyer: { connect: { id: buyer.id } }, 
+            changedByUser: { connect: { id: Number(userId) } },
+            diff: { created: true, ...validBuyers[idx] },
           },
         })
       )
     );
+
     return NextResponse.json({ success: true, errors });
   } catch (err: any) {
     return NextResponse.json({ error: err.message, errors }, { status: 500 });

@@ -2,14 +2,10 @@
 import { useEffect, useState } from "react";
 import { Menu, Button, Group, Text } from "@mantine/core";
 import Link from "next/link";
+import { useUser } from "@/context/UserContext";
 
 export default function UsersDropdown() {
-  const [users, setUsers] = useState<any[]>([]);
-  useEffect(() => {
-    fetch("/api/users")
-      .then((res) => res.json())
-      .then((data) => setUsers(data.users || []));
-  }, []);
+  const {users} = useUser();
   return (
     <Menu shadow="md" width={260}>
       <Menu.Target>

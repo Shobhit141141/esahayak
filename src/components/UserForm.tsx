@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Card, Title, TextInput, Button, Group, Select } from "@mantine/core";
 import { toast } from "react-toastify";
+import { useUser } from "@/context/UserContext";
 
 function validate(form: { name: string; email: string; role: string }) {
   const errors: { name?: string; email?: string } = {};
@@ -28,6 +29,8 @@ export default function UserForm() {
     setErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
+  const {user, users, setUsers} = useUser();
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     const validationErrors = validate(form);
@@ -46,6 +49,7 @@ export default function UserForm() {
       toast.success("User created!");
       setForm({ name: "", email: "", role: "AGENT" });
       setErrors({});
+      setUsers([...users, data.user]);
     } else {
       toast.error(data.error || "Error creating user");
     }
