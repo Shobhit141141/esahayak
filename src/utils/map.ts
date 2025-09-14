@@ -1,4 +1,4 @@
-import { BHK, Timeline } from "@/generated/prisma";
+import { BHK, Timeline } from "../generated/prisma";
 
 function mapBHK(input?: string | null): BHK | null {
   if (!input) return null;
