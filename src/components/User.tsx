@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { Group, Avatar, Menu, Button, Divider, Text } from "@mantine/core";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import { IoAddCircle } from "react-icons/io5";
+import { FaCheckCircle } from "react-icons/fa";
 
 export default function SelectedUserDisplay() {
   const router = useRouter();
@@ -29,18 +31,18 @@ export default function SelectedUserDisplay() {
         .then((res) => res.json())
         .then((data) => setUsers(data.users || []));
     } catch {}
-  }, [])
+  }, []);
 
   return (
     <Menu shadow="md" width={240} opened={opened} onChange={setOpened}>
       <Menu.Target>
         <Button variant="subtle" style={{ padding: 0, background: "none" }}>
           <Group gap="xs">
-            <Avatar radius="xl" size={30}>
-              {!loading ? user?.name[0] : 'J'}
+            <Avatar radius="xl" size={30} variant="filled" color="violet">
+              {!loading ? user?.name[0] : "J"}
             </Avatar>
             <div className="flex flex-col" style={{ textAlign: "left" }}>
-              <Text size="sm">{!loading ? "user" : user?.name[0] || "user"}</Text>
+              <Text size="sm">{loading ? "user" : user?.name || "user"}</Text>
               <Text size="xs" color="dimmed">
                 {loading ? "Loading..." : user?.role || "AGENT"}
               </Text>
@@ -49,36 +51,41 @@ export default function SelectedUserDisplay() {
         </Button>
       </Menu.Target>
       <Menu.Dropdown>
-        {users.filter((u) => u?.id !== user?.id).length === 0 ? (
+        {users.length === 0 ? (
           <Menu.Item disabled>No other users</Menu.Item>
         ) : (
-          users
-            .filter((u) => u.id !== user?.id)
-            .map((u) => (
-              <Menu.Item
-                key={u.id}
-                onClick={() => {
-                  Cookies.set("token", Buffer.from(`${u.id}:${u.role}`).toString("base64"));
-                  window.location.reload();
-                }}
-              >
-                <Group gap="xs">
-                  <Avatar radius="xl" size={24}>
-                    {u.name[0]}
-                  </Avatar>
-                  <div className="flex flex-col" style={{ textAlign: "left" }}>
-                    <Text size="sm">{u.name}</Text>
-                    <Text size="xs" color="dimmed">
-                      {u.role}
-                    </Text>
-                  </div>
-                </Group>
-              </Menu.Item>
-            ))
+          users.map((u) => (
+            <Menu.Item
+              key={u.id}
+              onClick={() => {
+                Object.keys(Cookies.get()).forEach((key) => {
+                  Cookies.remove(key);
+                });
+                Cookies.set("token", Buffer.from(`${u.id}:${u.role}`).toString("base64"));
+                window.location.reload();
+              }}
+            >
+              <Group gap="xs">
+                <Avatar radius="xl" variant="filled" size={24} color="violet">
+                  {u.name[0]}
+                </Avatar>
+                <div className="flex flex-col" style={{ textAlign: "left" }}>
+                  <Text size="sm">{u.name}</Text>
+                  <Text size="xs" color="dimmed">
+                    {u.role}
+                  </Text>
+                </div>
+                {user?.id === u.id && <FaCheckCircle color="green" title="Selected" />}
+              </Group>
+            </Menu.Item>
+          ))
         )}
         <Divider my="xs" />
         <Menu.Item color="blue" onClick={() => router.push("/users/new")}>
-          <p className="text-sm">Create New User</p>
+          <p className="text-sm flex ">
+            <IoAddCircle className="inline-block mr-1 text-lg" />
+            Create New User
+          </p>
         </Menu.Item>
       </Menu.Dropdown>
     </Menu>

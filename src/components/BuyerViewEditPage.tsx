@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useUser } from "../context/UserContext";
 import { useParams } from "next/navigation";
 import { Card, Title, Button, Group, Loader, Text, Divider, Badge, CopyButton, ActionIcon, Modal, Collapse, Stack, Avatar } from "@mantine/core";
 import { toast } from "react-toastify";
-import { MdPerson, MdPhone, MdLocationCity, MdHome, MdAttachMoney, MdAccessTime, MdSource, MdNotes, MdTag, MdExpandLess, MdExpandMore, MdAdd, MdEdit } from "react-icons/md";
+import { MdPerson, MdPhone, MdLocationCity, MdHome, MdAttachMoney, MdAccessTime, MdSource, MdNotes, MdTag, MdExpandLess, MdExpandMore, MdAdd, MdEdit, MdCancel } from "react-icons/md";
 import { bhkToLabel, timelineToLabel } from "../utils/map";
 import { LeadForm, LeadFormRef } from "./LeadForm";
 import { LuCopy, LuCopyCheck } from "react-icons/lu";
@@ -32,6 +33,7 @@ function FieldItem({ icon, label, value }: { icon: React.ReactNode; label: strin
 }
 
 export default function BuyerViewEditPage() {
+  const { userId, user } = useUser();
   const { id } = useParams();
   const [buyer, setBuyer] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
@@ -107,23 +109,27 @@ export default function BuyerViewEditPage() {
       </div>
     );
 
+  const canEdit = buyer?.creatorId === userId || user?.role === "ADMIN";
   return (
     <div className=" w-full max-w-2xl mx-auto pt-20 p-6">
       <div className="mb-6 flex items-center justify-between">
         {<Title order={2}>Buyer Details</Title>}
-        <Button
-          onClick={() => {
-            if (isEditing) {
-              handleCancelClick();
-            } else {
-              setIsEditing(true);
-            }
-          }}
-          disabled={saving}
-          color="violet"
-        >
-          {isEditing ? "Cancel" : "Edit"}
-        </Button>
+        {canEdit && (
+          <Button
+            onClick={() => {
+              if (isEditing) {
+                handleCancelClick();
+              } else {
+                setIsEditing(true);
+              }
+            }}
+            disabled={saving}
+            color="violet"
+            leftSection={isEditing ? <MdCancel size={18} /> : <MdEdit size={18} />}
+          >
+            {isEditing ? "Cancel" : "Edit"}
+          </Button>
+        )}
       </div>
 
       {!isEditing ? (

@@ -146,19 +146,12 @@ export default function BuyersTable() {
     Dropped: "red",
   };
 
-  const { userId: loggedInUserId } = useUser();
+  const { userId: loggedInUserId, user } = useUser();
   return (
     <div className="">
       <Group mb="md" gap="md" wrap="wrap" align="end">
         <TextInput label="Search" placeholder="Name, Phone, Email" value={searchValue} onChange={(e) => setSearchValue(e.target.value)} />
-        <Select
-          label="City"
-          placeholder="Select city"
-          data={CITY_OPTIONS}
-          value={filters.city}
-          onChange={(v) => setFilters((f) => ({ ...f, city: v || "" }))}
-          clearable
-        />
+        <Select label="City" placeholder="Select city" data={CITY_OPTIONS} value={filters.city} onChange={(v) => setFilters((f) => ({ ...f, city: v || "" }))} clearable />
         <Select
           label="Property Type"
           placeholder="Select property type"
@@ -184,12 +177,7 @@ export default function BuyersTable() {
           clearable
         />
 
-        <Button
-          onClick={() => setFilters({ city: "", propertyType: "", status: "", timeline: "", search: "" })}
-          variant="light"
-          color="red"
-          leftSection={<MdClear size={14} />}
-        >
+        <Button onClick={() => setFilters({ city: "", propertyType: "", status: "", timeline: "", search: "" })} variant="light" color="red" leftSection={<MdClear size={14} />}>
           Clear Filters
         </Button>
         <BuyersImportExport filters={{ ...filters, pageSize }} />
@@ -211,63 +199,64 @@ export default function BuyersTable() {
           <Loader size="md" />
         </div>
       ) : (
-        <Table striped highlightOnHover withTableBorder>
-          <Table.Thead>
-            <Table.Tr>
-              {[
-                { key: "id", label: "ID" },
-                { key: "fullName", label: "Name" },
-                { key: "phone", label: "Phone" },
-                { key: "city", label: "City" },
-                { key: "propertyType", label: "Property Type" },
-                { key: "bhk", label: "BHK" },
-                { key: "budget", label: "Budget" },
-                { key: "timeline", label: "Timeline" },
-                { key: "status", label: "Status" },
-                { key: "updatedAt", label: "Updated At" },
-              ].map((col) => (
-                <Table.Th key={col.key} onClick={() => handleSort(col.key)} style={{ cursor: "pointer" }} className="select-none">
-                  <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                    {col.label}
-                    {sort.field === col.key ? sort.direction === "asc" ? <FaSortUp /> : <FaSortDown /> : <FaSort />}
-                  </div>
-                </Table.Th>
-              ))}
-
-              <Table.Th>Action</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {sortedBuyers.map((buyer: any, index: number) => (
-              <Table.Tr key={buyer.id}>
-                <Table.Td>{index}</Table.Td>
-                <Table.Td>{buyer.fullName}</Table.Td>
-                <Table.Td>{buyer.phone}</Table.Td>
-                <Table.Td>{buyer.city}</Table.Td>
-                <Table.Td>{buyer.propertyType}</Table.Td>
-                <Table.Td>{buyer.bhk ? bhkToLabel(buyer.bhk) : "-"}</Table.Td>
-                <Table.Td>
-                  ₹ {buyer.budgetMin}–{buyer.budgetMax}
-                </Table.Td>
-                <Table.Td>{timelineToLabel(buyer.timeline)}</Table.Td>
-                <Table.Td>
-                  <Badge variant="filled" color={statusColors[buyer.status] || "red"}>
-                    {buyer.status}
-                  </Badge>
-                </Table.Td>
-                <Table.Td>{new Date(buyer.updatedAt).toLocaleString()}</Table.Td>
-                <Table.Td>
-                  <Button size="xs" variant="light" color="violet" component="a" href={`/buyers/${buyer.id}`}>
-                    {buyer.creatorId == loggedInUserId ? "View / Edit" : "View"}
-                  </Button>
-                </Table.Td>
+        <div className="overflow-x-auto">
+          <Table striped highlightOnHover withTableBorder>
+            <Table.Thead>
+              <Table.Tr>
+                {[
+                  { key: "id", label: "ID" },
+                  { key: "fullName", label: "Name" },
+                  { key: "phone", label: "Phone" },
+                  { key: "city", label: "City" },
+                  { key: "propertyType", label: "Property Type" },
+                  { key: "bhk", label: "BHK" },
+                  { key: "budget", label: "Budget" },
+                  { key: "timeline", label: "Timeline" },
+                  { key: "status", label: "Status" },
+                  { key: "updatedAt", label: "Updated At" },
+                ].map((col) => (
+                  <Table.Th key={col.key} onClick={() => handleSort(col.key)} style={{ cursor: "pointer" }} className="select-none">
+                    <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                      {col.label}
+                      {sort.field === col.key ? sort.direction === "asc" ? <FaSortUp /> : <FaSortDown /> : <FaSort />}
+                    </div>
+                  </Table.Th>
+                ))}
+                <Table.Th>Action</Table.Th>
               </Table.Tr>
-            ))}
-          </Table.Tbody>
-        </Table>
+            </Table.Thead>
+            <Table.Tbody>
+              {sortedBuyers.map((buyer: any, index: number) => (
+                <Table.Tr key={buyer.id}>
+                  <Table.Td>{index}</Table.Td>
+                  <Table.Td>{buyer.fullName}</Table.Td>
+                  <Table.Td>{buyer.phone}</Table.Td>
+                  <Table.Td>{buyer.city}</Table.Td>
+                  <Table.Td>{buyer.propertyType}</Table.Td>
+                  <Table.Td>{buyer.bhk ? bhkToLabel(buyer.bhk) : "-"}</Table.Td>
+                  <Table.Td>
+                    ₹ {buyer.budgetMin}–{buyer.budgetMax}
+                  </Table.Td>
+                  <Table.Td>{timelineToLabel(buyer.timeline)}</Table.Td>
+                  <Table.Td>
+                    <Badge variant="filled" color={statusColors[buyer.status] || "red"}>
+                      {buyer.status}
+                    </Badge>
+                  </Table.Td>
+                  <Table.Td>{new Date(buyer.updatedAt).toLocaleString()}</Table.Td>
+                  <Table.Td>
+                    <Button size="xs" variant="light" color="violet" component="a" href={`/buyers/${buyer.id}`}>
+                      {buyer.creatorId == loggedInUserId ? "View / Edit" : "View"}
+                    </Button>
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </div>
       )}
-      <div className="w-full flex items-center justify-between mt-4 fixed bottom-2 left-0 px-4">
-        <Pagination value={page} onChange={setPage} total={Math.ceil(total / pageSize)} mt="md" />
+      <div className="w-full flex flex-row items-end justify-between mt-4 px-4 space-y-2 md:space-y-0 fixed bottom-2 left-0 py-2 shadow-md">
+        <Pagination value={page} onChange={setPage} total={Math.ceil(total / pageSize)} />
         <Select
           label="Page Size"
           data={[

@@ -11,5 +11,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
   const token = Buffer.from(`${user.id}:${user.role}`).toString("base64");
-  return NextResponse.json({ token });
+  const response = NextResponse.json({ token });
+  response.cookies.set("username", user.name, { path: "/" });
+  response.cookies.set("role", user.role, { path: "/" });
+  return response;
 }

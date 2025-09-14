@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useUser } from "../context/UserContext";
+import { FaCheckCircle } from "react-icons/fa";
 import { Card, Title, Button, Group, Loader, Text, Avatar, Badge, Divider, useComputedColorScheme } from "@mantine/core";
 import { HiInformationCircle } from "react-icons/hi";
 import { FaCloudMoon, FaPeopleGroup } from "react-icons/fa6";
@@ -42,6 +44,7 @@ export default function HomeUsersLogin() {
       alert("Login error");
     }
   };
+  const { userId } = useUser();
   return (
     <div className="flex flex-col-reverse md:flex-row w-full min-h-screen px-8 md:px-12 items-center justify-evenly gap-12 pt-14">
       {/* Left Section: Image + Features */}
@@ -78,20 +81,23 @@ export default function HomeUsersLogin() {
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            {users.map((user) => (
+            {users.map((u) => (
               <div
-                key={user.id}
-                onClick={() => handleLogin(user)}
-                className="flex justify-between items-center gap-4 w-full bg-violet-500/10 p-3 rounded-lg hover:bg-violet-500/20 cursor-pointer transition"
+                key={u.id}
+                onClick={() => handleLogin(u)}
+                className={`flex justify-between items-center gap-4 w-full bg-violet-500/10 p-3 rounded-lg hover:bg-violet-500/20 cursor-pointer transition ${
+                  userId === u.id ? "border-2 border-violet-500" : ""
+                }`}
               >
                 <div className="flex items-center gap-3 cursor-pointer">
-                  <Avatar radius="xl" size={24}>
-                    {user.name[0]}
+                  <Avatar radius="xl" variant="filled" size={24} color="violet">
+                    {u.name[0]}
                   </Avatar>
-                  <span>{user.name}</span>
+                  <span>{u.name}</span>
+                  {userId === u.id && <FaCheckCircle color="green" title="Selected" />}
                 </div>
-                <Badge color={user.role === "admin" ? "red" : user.role === "manager" ? "blue" : "green"} variant="light" size="sm" radius="sm">
-                  {user.role}
+                <Badge color={u.role === "ADMIN" ? "orange" : "yellow"} variant="filled" size="sm" radius="sm">
+                  {u.role}
                 </Badge>
               </div>
             ))}

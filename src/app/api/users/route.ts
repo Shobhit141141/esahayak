@@ -7,6 +7,12 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const role = req.cookies.get("role")?.value;
+
+  console.log("Role from cookies:", role);
+  if (role !== "ADMIN") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   const body = await req.json();
   try {
     const user = await prisma.user.create({ data: body });

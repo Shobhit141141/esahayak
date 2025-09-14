@@ -44,6 +44,10 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
       return NextResponse.json({ error: "Buyer not found" }, { status: 404 });
     }
 
+    if (role !== "ADMIN" && String(existing.creatorId) !== String(userId)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     if (body.updatedAt !== existing.updatedAt.toISOString()) {
       return NextResponse.json({ error: "This record has been modified by someone else. Please refresh and try again." }, { status: 409 });
     }
