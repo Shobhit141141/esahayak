@@ -151,7 +151,7 @@ export default function BuyerViewEditPage() {
       </div>
     );
 
-  const canEdit = buyer?.creatorId === userId || user?.role === "ADMIN";
+  const canEdit = buyer?.creatorId == userId || user?.role === "ADMIN";
   return (
     <Card className=" w-full max-w-2xl mx-auto p-6" mt={"100px"}>
       <div className="mb-6 flex items-center justify-between">

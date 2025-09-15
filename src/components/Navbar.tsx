@@ -18,7 +18,7 @@ const navLinks = [
 
 export default function Navbar() {
   const { setColorScheme, colorScheme } = useMantineColorScheme();
-  const computedColorScheme = useComputedColorScheme("dark");
+  const computedColorScheme = useComputedColorScheme("light");
 
   const toggleColorScheme = () => {
     setColorScheme(computedColorScheme === "dark" ? "light" : "dark");

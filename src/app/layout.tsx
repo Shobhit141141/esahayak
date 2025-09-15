@@ -32,20 +32,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" {...mantineHtmlProps}>
-      <MantineProvider theme={theme} defaultColorScheme="dark">
-        <head>
-          <ColorSchemeScript />
-        </head>
-        <body style={{ fontFamily: getRaleway.style.fontFamily }} className="antialiased">
+      <head>
+        <ColorSchemeScript defaultColorScheme="dark" />
+      </head>
+      <body style={{ fontFamily: getRaleway.style.fontFamily }} className="antialiased">
+        <MantineProvider theme={theme} defaultColorScheme="dark">
           <UserProvider>
             <ToastContainer theme="colored" />
             <Navbar />
-            <Suspense fallback={<div>Loading...</div>}>
-              {children}
-            </Suspense>
+            <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
           </UserProvider>
-        </body>
-      </MantineProvider>
+        </MantineProvider>
+      </body>
     </html>
   );
 }
