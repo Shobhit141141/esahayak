@@ -1,5 +1,5 @@
 "use client";
-import BuyersTable from "@/components/BuyersTable";
+import BuyersTable from "@/components/buyers/BuyersTable";
 
 export default function BuyersPage() {
   return (

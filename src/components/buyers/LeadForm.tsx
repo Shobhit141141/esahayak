@@ -5,12 +5,12 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TextInput, Select, NumberInput, Textarea, Button, Group, Stack, Title } from "@mantine/core";
 import { toast } from "react-toastify";
-import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, BHK_OPTIONS, PURPOSE_OPTIONS, TIMELINE_OPTIONS, SOURCE_OPTIONS } from "../utils/leadOptions";
+import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, BHK_OPTIONS, PURPOSE_OPTIONS, TIMELINE_OPTIONS, SOURCE_OPTIONS } from "../../utils/leadOptions";
 import { faker } from "@faker-js/faker";
 import { MdAutoFixNormal, MdClear, MdRestartAlt } from "react-icons/md";
-import { leadFormSchema, LeadFormSchemaType } from "../utils/leadFormSchema";
+import { leadFormSchema, LeadFormSchemaType } from "../../utils/leadFormSchema";
 import { useUser } from "@/context/UserContext";
-import AuthBoundary from "./AuthBoundary";
+import AuthBoundary from "../auth/AuthBoundary";
 
 const defaultValues: LeadFormSchemaType = {
   fullName: "",

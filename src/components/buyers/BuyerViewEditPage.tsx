@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../../context/UserContext";
 import { useParams, useRouter } from "next/navigation";
 import { Card, Title, Button, Group, Loader, Text, Divider, Badge, CopyButton, ActionIcon, Modal, Collapse, Stack, Avatar } from "@mantine/core";
 import { toast } from "react-toastify";
@@ -21,11 +21,11 @@ import {
   MdEdit,
   MdCancel,
 } from "react-icons/md";
-import { bhkToLabel, timelineToLabel } from "../utils/map";
+import { bhkToLabel, timelineToLabel } from "../../utils/map";
 import { LeadForm, LeadFormRef } from "./LeadForm";
 import { LuCopy, LuCopyCheck } from "react-icons/lu";
 import { BiTrash } from "react-icons/bi";
-import AuthBoundary from "./AuthBoundary";
+import AuthBoundary from "../auth/AuthBoundary";
 import { FaUserGear } from "react-icons/fa6";
 
 function FieldItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number | null | undefined }) {
@@ -57,7 +57,7 @@ export default function BuyerViewEditPage() {
   const [createdBy, setCreatedBy] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, ] = useState(false);
+  const [saving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -199,10 +199,12 @@ export default function BuyerViewEditPage() {
             <Title order={3}>{buyer.fullName}</Title>
           </Group>
 
-        <div className="flex justify-start items-center gap-2 mb-4">
-          <p>Created By :</p>
-            <div className="bg-orange-500/20 w-fit rounded-sm px-4 py-1 flex items-center gap-2"><FaUserGear size={18} /> {createdBy?.name}</div>
-        </div>
+          <div className="flex justify-start items-center gap-2 mb-4">
+            <p>Created By :</p>
+            <div className="bg-orange-500/20 w-fit rounded-sm px-4 py-1 flex items-center gap-2">
+              <FaUserGear size={18} /> {createdBy?.name}
+            </div>
+          </div>
 
           <FieldItem icon={<MdPerson />} label="Email" value={buyer.email} />
           <FieldItem icon={<MdPhone />} label="Phone" value={buyer.phone} />

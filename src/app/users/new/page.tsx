@@ -1,5 +1,5 @@
 "use client";
-import UserForm from "../../../components/UserForm";
+import UserForm from "../../../components/users/UserForm";
 import { useUser } from "../../../context/UserContext";
 import { Button, Card, Text, Title } from "@mantine/core";
 

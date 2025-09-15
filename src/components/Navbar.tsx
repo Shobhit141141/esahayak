@@ -3,11 +3,12 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@mantine/core";
 import { useMantineColorScheme, useComputedColorScheme } from "@mantine/core";
-import SelectedUserDisplay from "./SelectedUser";
+import SelectedUserDisplay from "./users/SelectedUser";
 import { WiMoonAltFirstQuarter } from "react-icons/wi";
 import { IoPersonAddSharp } from "react-icons/io5";
 import { AiFillHome } from "react-icons/ai";
 import { FaPeopleGroup } from "react-icons/fa6";
+import UserGroup03Icon from "./users/UserIcon";
 
 const navLinks = [
   { href: "/", label: "Home", icon: <AiFillHome className="text-md mr-2" /> },
@@ -29,7 +30,10 @@ export default function Navbar() {
     <nav className={`w-full shadow-md fixed top-0 z-50 backdrop-blur-lg`}>
       <div className="flex items-center justify-between px-4 py-3 md:px-8">
         {/* logo */}
-        <div className="font-bold text-xl">E-Sahayak</div>
+        <Link href={"/"} className="flex items-center space-x-2">
+          <UserGroup03Icon />
+          <div className="text-xl font-semibold">E-Sahayak</div>
+        </Link>
 
         {/* menu */}
         <div className="hidden md:flex items-center space-x-2">
@@ -66,7 +70,7 @@ export default function Navbar() {
 
       {/* nav links */}
       {isOpen && (
-        <div className={`${colorScheme === "dark" ? "bg-gray-800" : "bg-white"} md:hidden px-4 pb-4 space-y-2`}>
+        <div className={`md:hidden px-4 pb-4 space-y-2`}>
           {navLinks.map((link) => (
             <Button key={link.href} component={Link} href={link.href} variant="subtle" fullWidth onClick={() => setIsOpen(false)} className="flex items-center gap-1">
               {link.icon} {link.label}

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { IoAddCircle } from "react-icons/io5";
 import { FaCheckCircle } from "react-icons/fa";
 import { useUser } from "@/context/UserContext";
+import { BiChevronDown } from "react-icons/bi";
 
 export default function SelectedUserDisplay() {
   const router = useRouter();
@@ -29,6 +30,8 @@ export default function SelectedUserDisplay() {
                 {loading ? "Loading..." : user?.role || "none"}
               </Text>
             </div>
+
+            <BiChevronDown />
           </Group>
         </Button>
       </Menu.Target>

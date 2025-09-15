@@ -1,17 +1,17 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useUser } from "../context/UserContext";
-import { Table, TextInput, Select, Button, Group, Pagination, Loader, Badge } from "@mantine/core";
+import { useUser } from "../../context/UserContext";
+import { Table, TextInput, Select, Button, Group, Pagination, Loader, Badge, MultiSelect } from "@mantine/core";
 import { useState as useReactState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, TIMELINE_OPTIONS } from "../utils/leadOptions";
+import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, TIMELINE_OPTIONS } from "../../utils/leadOptions";
 import { MdClear } from "react-icons/md";
 import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
-import { bhkToLabel, timelineToLabel } from "../utils/map";
+import { bhkToLabel, timelineToLabel } from "../../utils/map";
 import BuyersImportExport from "./BuyersImportExport";
 import { toast } from "react-toastify";
 import { Controller, useForm } from "react-hook-form";
-import AuthBoundary from "./AuthBoundary";
+import AuthBoundary from "../auth/AuthBoundary";
 
 const STATUS_OPTIONS = [
   { value: "New", label: "New" },
@@ -21,6 +21,18 @@ const STATUS_OPTIONS = [
   { value: "Negotiation", label: "Negotiation" },
   { value: "Converted", label: "Converted" },
   { value: "Dropped", label: "Dropped" },
+];
+
+const ALL_COLUMNS = [
+  { key: "fullName", label: "Name" },
+  { key: "phone", label: "Phone" },
+  { key: "city", label: "City" },
+  { key: "propertyType", label: "Property Type" },
+  { key: "bhk", label: "BHK" },
+  { key: "budget", label: "Budget" },
+  { key: "timeline", label: "Timeline" },
+  { key: "status", label: "Status" },
+  { key: "updatedAt", label: "Updated At" },
 ];
 
 type Buyer = {
@@ -56,6 +68,7 @@ export default function BuyersTable() {
     field: "updatedAt",
     direction: "desc",
   });
+  const [visibleColumns, setVisibleColumns] = useState(ALL_COLUMNS.map((col) => col.key));
 
   useEffect(() => {
     const params = new URLSearchParams({ ...filters, page: String(page) });
@@ -182,11 +195,9 @@ export default function BuyersTable() {
       });
   };
 
-   if (!token) {
-      return (
-       <AuthBoundary loading={loading} />
-      );
-    }
+  if (!token) {
+    return <AuthBoundary loading={loading} />;
+  }
 
   // if (loading) {
   //   return (
@@ -205,7 +216,7 @@ export default function BuyersTable() {
   // }
 
   return (
-    <div className="">
+    <div className="pb-20">
       <Group mb="md" gap="md" wrap="wrap" align="end">
         <form onSubmit={handleSubmit((data) => setFilters((f) => ({ ...f, search: data.search })))} className="flex flex-row items-end gap-2">
           <Controller
@@ -269,6 +280,15 @@ export default function BuyersTable() {
           variant="filled"
           clearable
         />
+        <MultiSelect
+          label="Show Columns"
+          placeholder="Select columns to display"
+          data={ALL_COLUMNS.map((c) => ({ value: c.key, label: c.label }))}
+          value={visibleColumns}
+          onChange={setVisibleColumns}
+          clearable
+          variant="filled"
+        />
 
         <Button
           onClick={() => {
@@ -297,61 +317,62 @@ export default function BuyersTable() {
           <Table striped withTableBorder>
             <Table.Thead>
               <Table.Tr>
-                {[
-                  { key: "id", label: "ID" },
-                  { key: "fullName", label: "Name" },
-                  { key: "phone", label: "Phone" },
-                  { key: "city", label: "City" },
-                  { key: "propertyType", label: "Property Type" },
-                  { key: "bhk", label: "BHK" },
-                  { key: "budget", label: "Budget" },
-                  { key: "timeline", label: "Timeline" },
-                  { key: "status", label: "Status" },
-                  { key: "updatedAt", label: "Updated At" },
-                ].map((col) => (
-                  <Table.Th key={col.key} onClick={() => handleSort(col.key)} style={{ cursor: "pointer" }} className="select-none">
-                    <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                      {col.label}
-                      {sort.field === col.key ? sort.direction === "asc" ? <FaSortUp /> : <FaSortDown /> : <FaSort />}
-                    </div>
-                  </Table.Th>
-                ))}
+                <Table.Th>ID</Table.Th>
+                {ALL_COLUMNS.map((col) =>
+                  visibleColumns.includes(col.key) ? (
+                    <Table.Th key={col.key} onClick={() => handleSort(col.key)} style={{ cursor: "pointer" }} className="select-none">
+                      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                        {col.label}
+                        {sort.field === col.key ? sort.direction === "asc" ? <FaSortUp /> : <FaSortDown /> : <FaSort />}
+                      </div>
+                    </Table.Th>
+                  ) : null
+                )}
                 <Table.Th>Action</Table.Th>
               </Table.Tr>
             </Table.Thead>
+
             <Table.Tbody>
               {sortedBuyers.map((buyer: any, index: number) => (
                 <Table.Tr key={buyer.id}>
                   <Table.Td>{index}</Table.Td>
-                  <Table.Td>{buyer.fullName}</Table.Td>
-                  <Table.Td>{buyer.phone}</Table.Td>
-                  <Table.Td>{buyer.city}</Table.Td>
-                  <Table.Td>{buyer.propertyType}</Table.Td>
-                  <Table.Td>{buyer.bhk ? bhkToLabel(buyer.bhk) : "-"}</Table.Td>
-                  <Table.Td>
-                    ₹ {buyer.budgetMin}–{buyer.budgetMax}
-                  </Table.Td>
-                  <Table.Td>{timelineToLabel(buyer.timeline)}</Table.Td>
-                  <Table.Td>
-                    <Badge color={statusColors[buyer.status]}>{buyer.status}</Badge>
-                    {( user?.role === "ADMIN" || buyer.creatorId === loggedInUserId) && (
-                      <Select
-                        value={buyer.status}
-                        data={STATUS_OPTIONS}
-                        onChange={(v) => v && handleStatusChange(buyer.id, v)}
-                        disabled={statusUpdating === buyer.id}
-                        size="xs"
-                        style={{ minWidth: 120 }}
-                        variant="filled"
-                        pt={"sm"}
-                      />
-                    )}
-                  </Table.Td>
-                  <Table.Td>{new Date(buyer.updatedAt).toLocaleString()}</Table.Td>
+                  {ALL_COLUMNS.map((col) =>
+                    visibleColumns.includes(col.key) ? (
+                      <Table.Td key={col.key}>
+                        {col.key === "bhk" ? (
+                          bhkToLabel(buyer.bhk)
+                        ) : col.key === "budget" ? (
+                          `₹ ${buyer.budgetMin}–${buyer.budgetMax}`
+                        ) : col.key === "timeline" ? (
+                          timelineToLabel(buyer.timeline)
+                        ) : col.key === "status" ? (
+                          <div>
+                            <Badge color={statusColors[buyer.status]}>{buyer.status}</Badge>
+                            {(user?.role === "ADMIN" || buyer.creatorId === loggedInUserId) && (
+                              <Select
+                                value={buyer.status}
+                                data={STATUS_OPTIONS}
+                                onChange={(v) => v && handleStatusChange(buyer.id, v)}
+                                disabled={statusUpdating === buyer.id}
+                                size="xs"
+                                style={{ minWidth: 120 }}
+                                variant="filled"
+                                pt={"sm"}
+                              />
+                            )}
+                          </div>
+                        ) : col.key === "updatedAt" ? (
+                          new Date(buyer.updatedAt).toLocaleString()
+                        ) : (
+                          (buyer as any)[col.key]
+                        )}
+                      </Table.Td>
+                    ) : null
+                  )}
                   <Table.Td>
                     <Group gap="xs">
                       <Button size="xs" variant="filled" color="violet" component="a" href={`/buyers/${buyer.id}`}>
-                        {(buyer.creatorId == loggedInUserId || user?.role === "ADMIN" )? "View / Edit" : "View"}
+                        {buyer.creatorId == loggedInUserId || user?.role === "ADMIN" ? "View / Edit" : "View"}
                       </Button>
                     </Group>
                   </Table.Td>
@@ -361,18 +382,20 @@ export default function BuyersTable() {
           </Table>
         </div>
       )}
-      <div className="w-full flex flex-row items-end justify-between mt-4 px-4 space-y-2 md:space-y-0 fixed bottom-2 left-0 py-2 shadow-md">
+      <div className="w-full flex flex-row items-end justify-between px-4 md:space-y-0 fixed bottom-0 left-0 py-1 shadow-md backdrop-blur-lg">
         <Pagination value={page} onChange={setPage} total={Math.ceil(total / pageSize)} />
         <Select
-          label="Page Size"
+          // label="Page Size"
           data={[
             { value: "5", label: "5" },
             { value: "10", label: "10" },
             { value: "20", label: "20" },
             { value: "50", label: "50" },
           ]}
+          defaultValue={"10"}
           value={String(pageSize)}
           variant="filled"
+          placeholder="Page Size"
           onChange={(v) => setPageSize(Number(v))}
         />
       </div>

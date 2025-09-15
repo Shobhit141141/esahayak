@@ -1,5 +1,5 @@
 "use client";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../../context/UserContext";
 import { FaCheckCircle } from "react-icons/fa";
 import { Card, Loader, Text, Avatar, Badge, Divider, useComputedColorScheme } from "@mantine/core";
 import { HiInformationCircle } from "react-icons/hi";
@@ -36,9 +36,8 @@ export default function HomeUsersLogin() {
     }
   };
 
- 
   return (
-    <div className="flex flex-col-reverse md:flex-row w-full min-h-screen px-8 md:px-12 items-center justify-evenly gap-12 py-10">
+    <div className="flex flex-col-reverse md:flex-row w-full min-h-screen px-8 md:px-12 items-center justify-evenly gap-12 pt-20 pb-10">
       {/* Left Section: Image + Features */}
       <div className="flex flex-col items-center w-full md:w-1/2">
         <img src="/db.png" alt="DB" className="w-3/4 h-auto object-contain" />
@@ -73,23 +72,26 @@ export default function HomeUsersLogin() {
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            {users.map((u) => (
+           {
+            users.length === 0 && <div className=" bg-red-500/20 px-4 py-2 rounded-md text-center text-sm">No users found. Please create a user first.</div>
+           }
+            {users.map((user) => (
               <div
-                key={u.id}
-                onClick={() => handleLogin(u)}
+                key={user.id}
+                onClick={() => handleLogin(user)}
                 className={`flex justify-between items-center gap-4 w-full bg-violet-500/10 p-3 rounded-lg hover:bg-violet-500/20 cursor-pointer transition ${
-                  userId === u.id ? "border-2 border-violet-500" : ""
+                  userId === user.id ? "border-2 border-violet-500" : ""
                 }`}
               >
                 <div className="flex items-center gap-3 cursor-pointer">
                   <Avatar radius="xl" variant="filled" size={24} color="violet">
-                    {u.name[0]}
+                    {user.name[0]}
                   </Avatar>
-                  <span>{u.name}</span>
-                  {userId == u.id && <FaCheckCircle color="green" title="Selected" />}
+                  <span>{user.name}</span>
+                  {userId == user.id && <FaCheckCircle color="green" title="Selected" />}
                 </div>
-                <Badge color={u.role === "ADMIN" ? "orange" : "yellow"} variant="filled" size="sm" radius="sm">
-                  {u.role}
+                <Badge color={user.role === "ADMIN" ? "red" : "blue"} variant="filled" size="sm" radius="sm">
+                  {user.role}
                 </Badge>
               </div>
             ))}

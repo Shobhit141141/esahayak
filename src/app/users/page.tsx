@@ -1,2 +1,2 @@
-import UsersListPage from "../../components/UsersListPage";
+import UsersListPage from "../../components/users/UsersListPage";
 export default UsersListPage;

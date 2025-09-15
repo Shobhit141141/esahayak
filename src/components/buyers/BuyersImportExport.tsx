@@ -1,8 +1,8 @@
 import {  useState } from "react";
 import { Button, Group, Table, FileInput, Modal, Loader } from "@mantine/core";
 import Papa from "papaparse";
-import { leadFormSchema } from "../utils/leadFormSchema";
-import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, PURPOSE_OPTIONS, TIMELINE_OPTIONS, SOURCE_OPTIONS, BHK_OPTIONS } from "../utils/leadOptions";
+import { leadFormSchema } from "../../utils/leadFormSchema";
+import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, PURPOSE_OPTIONS, TIMELINE_OPTIONS, SOURCE_OPTIONS, BHK_OPTIONS } from "../../utils/leadOptions";
 import { BiExport, BiImport } from "react-icons/bi";
 import { FaFileCsv } from "react-icons/fa6";
 import { toast } from "react-toastify";
