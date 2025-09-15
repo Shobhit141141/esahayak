@@ -6,6 +6,7 @@
 
 - [Tech Stack](#-tech-stack)
 - [Features](#-features)
+- [File Structure](#-file-structure)
 - [Prerequisites](#-prerequisites)
 - [Quick Start](#-quick-start)
 - [Unit test](#-unit-test)
@@ -28,6 +29,34 @@
 - **Error Boundaries**: Graceful error handling in components/pages.
 - **Rate limiting using REDIS+IP**: based on requests by IP per minute.
 - **Unit Testing**: Basic unit test setup with Jest.
+
+## 📂 File Structure
+
+```plaintext
+esahayak/
+src/
+├── app/
+│   ├── api/            # API route handlers
+│   ├── buyers/         # Pages or components related to buyers
+│   ├── error/          # Additional error handling pages/components
+│   ├── users/          # Pages or components related to users
+│   ├── error.tsx       # Global error boundary
+│   ├── globals.css     # Global stylesheet
+│   ├── icon.ico        # App icon
+│   ├── layout.tsx      # Root layout component
+│   ├── not-found.tsx   # 404 page
+│   └── page.tsx        # Main entry page
+├── components/         # Reusable UI components
+├── context/            # React context providers and hooks
+├── generated/          # Auto-generated prisma client
+├── lib/                # Utility libraries and services
+├── types/              # TypeScript type definitions
+├── utils/              # Helper functions
+├── middleware.ts       # Middleware logic
+├── public/             # Static assets (images, fonts, etc.)
+├── styles/             # Additional stylesheets
+└── tests/              # Unit and integration tests
+```
 
 ## 🛠 Prerequisites
 

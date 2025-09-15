@@ -348,7 +348,7 @@ export default function BuyersTable() {
                         ) : col.key === "status" ? (
                           <div>
                             <Badge color={statusColors[buyer.status]}>{buyer.status}</Badge>
-                            {(user?.role === "ADMIN" || buyer.creatorId === loggedInUserId) && (
+                            {(user?.role === "ADMIN" || buyer.creatorId == loggedInUserId) && (
                               <Select
                                 value={buyer.status}
                                 data={STATUS_OPTIONS}
