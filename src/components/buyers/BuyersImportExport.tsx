@@ -227,10 +227,10 @@ export default function BuyersImportExport({
           variant="filled"
           color="blue"
           onClick={() => {
-            const sampleCsc = "/buyers-data.csv";
+            const sampleCsc = "/buyers_data.csv";
             const a = document.createElement("a");
             a.href = sampleCsc;
-            a.download = "buyers-data.csv";
+            a.download = "buyers_data.csv";
             a.click();
           }}
           size="lg"
