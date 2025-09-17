@@ -1,13 +1,44 @@
-import {  useState } from "react";
-import { Button, Group, Table, FileInput, Modal, Loader } from "@mantine/core";
+import { useState } from "react";
+import {
+  Button,
+  Group,
+  Table,
+  FileInput,
+  Modal,
+  Loader,
+  ActionIcon,
+  Tooltip,
+} from "@mantine/core";
 import Papa from "papaparse";
 import { leadFormSchema } from "../../utils/leadFormSchema";
-import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, PURPOSE_OPTIONS, TIMELINE_OPTIONS, SOURCE_OPTIONS, BHK_OPTIONS } from "../../utils/leadOptions";
-import { BiExport, BiImport } from "react-icons/bi";
+import {
+  CITY_OPTIONS,
+  PROPERTY_TYPE_OPTIONS,
+  PURPOSE_OPTIONS,
+  TIMELINE_OPTIONS,
+  SOURCE_OPTIONS,
+  BHK_OPTIONS,
+} from "../../utils/leadOptions";
+import { BiDownload, BiExport, BiImport } from "react-icons/bi";
 import { FaFileCsv } from "react-icons/fa6";
 import { toast } from "react-toastify";
 
-const HEADERS = ["fullName", "email", "phone", "city", "propertyType", "bhk", "purpose", "budgetMin", "budgetMax", "timeline", "source", "notes", "tags", "status"];
+const HEADERS = [
+  "fullName",
+  "email",
+  "phone",
+  "city",
+  "propertyType",
+  "bhk",
+  "purpose",
+  "budgetMin",
+  "budgetMax",
+  "timeline",
+  "source",
+  "notes",
+  "tags",
+  "status",
+];
 
 function transformRow(row: any) {
   return {
@@ -30,30 +61,85 @@ function validateRow(row: any, idx: number) {
   const timelineValues = TIMELINE_OPTIONS.map((o) => o.value);
   const sourceValues = SOURCE_OPTIONS.map((o) => o.value);
   const bhkValues = BHK_OPTIONS.map((o) => o.value);
-  const statusValues = ["New", "Qualified", "Contacted", "Visited", "Negotiation", "Converted", "Dropped"];
+  const statusValues = [
+    "New",
+    "Qualified",
+    "Contacted",
+    "Visited",
+    "Negotiation",
+    "Converted",
+    "Dropped",
+  ];
 
   const transformed = transformRow(row);
 
-  if (!cityValues.includes(transformed.city)) return `Row ${idx + 1}: Unknown city`;
-  if (!propertyTypeValues.includes(transformed.propertyType)) return `Row ${idx + 1}: Unknown propertyType`;
-  if (transformed.bhk && !bhkValues.includes(transformed.bhk)) return `Row ${idx + 1}: Unknown bhk`;
-  if (!purposeValues.includes(transformed.purpose)) return `Row ${idx + 1}: Unknown purpose`;
-  if (!timelineValues.includes(transformed.timeline)) return `Row ${idx + 1}: Unknown timeline`;
-  if (!sourceValues.includes(transformed.source)) return `Row ${idx + 1}: Unknown source`;
-  if (!statusValues.includes(transformed.status)) return `Row ${idx + 1}: Unknown status`;
+  if (!cityValues.includes(transformed.city))
+    return `Row ${idx + 1}: Unknown city ${transformed.city}`;
+  if (!propertyTypeValues.includes(transformed.propertyType))
+    return `Row ${idx + 1}: Unknown propertyType ${transformed.propertyType}`;
+  if (transformed.bhk && !bhkValues.includes(transformed.bhk))
+    return `Row ${idx + 1}: Unknown bhk ${transformed.bhk}`;
+  if (!purposeValues.includes(transformed.purpose))
+    return `Row ${idx + 1}: Unknown purpose ${transformed.purpose}`;
+  if (!timelineValues.includes(transformed.timeline))
+    return `Row ${idx + 1}: Unknown timeline ${transformed.timeline}`;
+  if (!sourceValues.includes(transformed.source))
+    return `Row ${idx + 1}: Unknown source ${transformed.source}`;
+  if (!statusValues.includes(transformed.status))
+    return `Row ${idx + 1}: Unknown status ${transformed.status}`;
+
+  // Check for problematic characters in notes
+  if (typeof transformed.notes === "string" && /,|"/.test(transformed.notes))
+    return `Row ${idx + 1}: Notes contain comma or quote which may distort CSV`;
+
+  if (
+    typeof row.tags === "string" &&
+    row.tags.trim() !== "" &&
+    !/^\s*\[.*\]\s*$/.test(row.tags)
+  ) {
+    return `Row ${idx + 1}: Tags should be a JSON array, e.g. ["family","follow-up"]`;
+  }
+  if (
+    typeof row.tags === "string" &&
+    row.tags.trim() !== ""
+  ) {
+    try {
+      const parsedTags = JSON.parse(row.tags);
+      if (!Array.isArray(parsedTags)) {
+        return `Row ${idx + 1}: Tags should be a JSON array, e.g. ["family","follow-up"]`;
+      }
+    } catch {
+      return `Row ${idx + 1}: Tags should be a valid JSON array, e.g. ["family","follow-up"]`;
+    }
+  }
 
   const result = leadFormSchema.safeParse(transformed);
-  if (!result.success) return `Row ${idx + 1}: ${result.error.issues.map((e) => e.message).join(", ")}`;
+  if (!result.success)
+    return `Row ${idx + 1}: ${result.error.issues
+      .map((e) => e.message)
+      .join(", ")}`;
   return null;
 }
 
-export default function BuyersImportExport({ filters, onImport }: { filters: any, onImport: () => void }) {
+export default function BuyersImportExport({
+  filters,
+  onImport,
+}: {
+  filters: any;
+  onImport: () => void;
+}) {
   const [importModal, setImportModal] = useState(false);
   const [importErrors, setImportErrors] = useState<string[]>([]);
   const [importLoading, setImportLoading] = useState(false);
 
   const handleExport = async () => {
-    const res = await fetch(`/api/buyers?${new URLSearchParams({ ...filters, page: "1", pageSize: "1000" })}`);
+    const res = await fetch(
+      `/api/buyers?${new URLSearchParams({
+        ...filters,
+        page: "1",
+        pageSize: "1000",
+      })}`
+    );
     const data = await res.json();
     const buyers = data.buyers || [];
     const csv = Papa.unparse(buyers, { columns: HEADERS });
@@ -88,21 +174,31 @@ export default function BuyersImportExport({ filters, onImport }: { filters: any
         });
         setImportErrors(errors);
         if (validRows.length > 0) {
-          const res = await fetch("/api/buyers/import", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ buyers: validRows }),
-          });
-          if (!res.ok) {
-            toast.error("Import failed. See errors.");
-            errors.push("Server error during import");
+          try {
+            const res = await fetch("/api/buyers/import", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ buyers: validRows }),
+            });
+
+            if (!res.ok) {
+              errors.push("Server error during import");
+            }
+          } catch (e) {
+            errors.push("Network or server error during import");
           }
         }
-        if (errors.length === 0) {
-          toast.success("Import successful");
+        if (validRows.length === rows.length && errors.length === 0) {
+          toast.success("All leads imported successfully");
           setImportModal(false);
-          onImport();
+        } else if (validRows.length > 0 && errors.length > 0) {
+          toast.warning(
+            `${validRows.length} leads imported, ${errors.length} failed`
+          );
+        } else {
+          toast.error("Import failed. No leads were added.");
         }
+        onImport();
         setImportLoading(false);
       },
     });
@@ -110,22 +206,61 @@ export default function BuyersImportExport({ filters, onImport }: { filters: any
 
   return (
     <Group gap="md">
-      <Button onClick={handleExport} variant="light" color="violet" leftSection={<BiExport size={16} />}>
+      <Button
+        onClick={handleExport}
+        variant="filled"
+        color="violet"
+        leftSection={<BiExport size={16} />}
+      >
         Export CSV
       </Button>
-      <Button onClick={() => setImportModal(true)} variant="light" color="blue" leftSection={<BiImport size={16} />}>
+      <Button
+        onClick={() => setImportModal(true)}
+        variant="filled"
+        color="blue"
+        leftSection={<BiImport size={16} />}
+      >
         Import CSV
       </Button>
-      <Modal opened={importModal} onClose={() => {
-        
-        setImportModal(false);
-        setImportErrors([]);
-
-      }} title="Import Buyers CSV" size="lg" centered>
-        <FileInput label="CSV File" accept=".csv" placeholder="Upload CSV file" onChange={handleImport} disabled={importLoading} leftSection={<FaFileCsv size={16} />} />
-        {importLoading && <div className="w-full flex justify-center h-[50px]">
-          <Loader mt="md" />
-          </div>}
+      <Tooltip label="Download sample CSV" withArrow>
+        <ActionIcon
+          variant="filled"
+          color="blue"
+          onClick={() => {
+            const sampleCsc = "/buyers-data.csv";
+            const a = document.createElement("a");
+            a.href = sampleCsc;
+            a.download = "buyers-data.csv";
+            a.click();
+          }}
+          size="lg"
+        >
+          <BiDownload />
+        </ActionIcon>
+      </Tooltip>
+      <Modal
+        opened={importModal}
+        onClose={() => {
+          setImportModal(false);
+          setImportErrors([]);
+        }}
+        title="Import Buyers CSV"
+        size="lg"
+        centered
+      >
+        <FileInput
+          label="CSV File"
+          accept=".csv"
+          placeholder="Upload CSV file"
+          onChange={handleImport}
+          disabled={importLoading}
+          leftSection={<FaFileCsv size={16} />}
+        />
+        {importLoading && (
+          <div className="w-full flex justify-center h-[50px]">
+            <Loader mt="md" />
+          </div>
+        )}
         {importErrors.length > 0 && (
           <Table mt="md" striped withTableBorder highlightOnHover>
             <Table.Thead>

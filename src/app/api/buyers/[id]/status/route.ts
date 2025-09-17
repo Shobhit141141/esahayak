@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import {prisma} from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
-export async function PUT(req: NextRequest, { params }:{ params: Promise<{ id: string }> }
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const { status } = await req.json();
@@ -18,16 +20,31 @@ export async function PUT(req: NextRequest, { params }:{ params: Promise<{ id: s
   if (role !== "ADMIN" && String(buyer.creatorId) !== String(userId)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  const StatusEnum = z.enum(["New", "Qualified", "Contacted", "Visited", "Negotiation", "Converted", "Dropped"]);
+  const StatusEnum = z.enum([
+    "New",
+    "Qualified",
+    "Contacted",
+    "Visited",
+    "Negotiation",
+    "Converted",
+    "Dropped",
+  ]);
   if (!StatusEnum.safeParse(status).success) {
-    return NextResponse.json({ error: "Invalid status value" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid status value" },
+      { status: 400 }
+    );
+  }
+  const diff: Record<string, { old: any; new: any }> = {};
+  if (buyer.status !== status) {
+    diff.status = { old: buyer.status, new: status };
   }
   await prisma.buyer.update({ where: { id: Number(id) }, data: { status } });
   await prisma.buyerHistory.create({
     data: {
       buyerId: Number(id),
       changedBy: Number(userId),
-      diff: { status },
+      diff,
     },
   });
   return NextResponse.json({ success: true });

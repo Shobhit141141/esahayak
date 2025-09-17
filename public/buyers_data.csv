@@ -1,0 +1,11 @@
+fullName,email,phone,city,propertyType,bhk,purpose,budgetMin,budgetMax,timeline,source,notes,tags,status
+Jane Smith,jane.smith@example.com,9876543210,Mohali,Villa,FOUR,Rent,7000000,12000000,THREE_TO_SIX_M,Referral,Looking for a spacious villa with garden.,"[""follow-up""]",Contacted
+Rahul Verma,rahul.verma@example.com,9123456789,Chandigarh,Apartment,TWO,Buy,3500000,5000000,ZERO_TO_THREE_M,Website,Prefers a modern apartment near IT Park.,"[""priority"",""hot-lead""]",New
+Aarav Sharma,,9988776655,Panchkula,Plot,ONE,Buy,2000000,4000000,MORE_THAN_SIX_M,Walk_in,Looking for a plot for long-term investment.,"[""cold-lead""]",Qualified
+Emily Johnson,emily.johnson@example.com,9112233445,Mohali,Apartment,THREE,Rent,25000,40000,ZERO_TO_THREE_M,Referral,Wants a furnished apartment with parking.,"[""follow-up"",""expat""]",Contacted
+Simran Kaur,simran.kaur@example.com,9988123456,Zirakpur,Villa,THREE,Buy,12000000,18000000,ZERO_TO_THREE_M,Other,High budget client prefers gated society.,"[""vip""]",Negotiation
+Karan Mehta,karan.mehta@example.com,9876512345,Chandigarh,Apartment,ONE,Rent,15000,22000,ZERO_TO_THREE_M,Website,Looking for a small apartment near university.,"[""student""]",New
+Priya Nair,priya.nair@example.com,9123012345,Panchkula,Apartment,THREE,Buy,6000000,9500000,THREE_TO_SIX_M,Other,Family needs independent house with backyard.,"[""family"",""follow-up""]",Qualified
+Arjun Malhotra,arjun.malhotra@example.com,9811122233,Mohali,Plot,ONE,Buy,5000000,8000000,MORE_THAN_SIX_M,Website,Interested in commercial plots.,"[""investor""]",New
+Sofia Patel,sofia.patel@example.com,9998877665,Zirakpur,Apartment,TWO,Rent,18000,25000,ZERO_TO_THREE_M,Referral,Prefers fully furnished with good connectivity.,"[""priority""]",Visited
+David Wilson,david.wilson@example.com,9877700000,Chandigarh,Apartment,THREE,Buy,7000000,10000000,THREE_TO_SIX_M,Other,Looking for resale flat in posh area.,"[""event-lead""]",Converted

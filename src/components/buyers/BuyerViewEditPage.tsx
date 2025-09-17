@@ -20,6 +20,7 @@ import {
   MdAdd,
   MdEdit,
   MdCancel,
+  MdCurrencyRupee,
 } from "react-icons/md";
 import { bhkToLabel, timelineToLabel } from "../../utils/map";
 import { LeadForm, LeadFormRef } from "./LeadForm";
@@ -211,7 +212,7 @@ export default function BuyerViewEditPage() {
           <FieldItem icon={<MdLocationCity />} label="City" value={buyer.city} />
           <FieldItem icon={<MdHome />} label="Property Type" value={buyer.propertyType} />
           {buyer.bhk && <FieldItem icon={<MdHome />} label="BHK" value={bhkToLabel(buyer.bhk)} />}
-          <FieldItem icon={<MdAttachMoney />} label="Budget" value={`${buyer.budgetMin || ""} - ${buyer.budgetMax || ""}`} />
+          <FieldItem icon={<MdCurrencyRupee />} label="Budget" value={`${buyer.budgetMin || ""} - ${buyer.budgetMax || ""}`} />
           <FieldItem icon={<MdAccessTime />} label="Timeline" value={timelineToLabel(buyer.timeline)} />
           <FieldItem icon={<MdSource />} label="Source" value={buyer.source} />
           <FieldItem icon={<MdNotes />} label="Notes" value={buyer.notes} />

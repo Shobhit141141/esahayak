@@ -1,10 +1,24 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useUser } from "../../context/UserContext";
-import { Table, TextInput, Select, Button, Group, Pagination, Loader, Badge, MultiSelect } from "@mantine/core";
+import {
+  Table,
+  TextInput,
+  Select,
+  Button,
+  Group,
+  Pagination,
+  Loader,
+  Badge,
+  MultiSelect,
+} from "@mantine/core";
 import { useState as useReactState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CITY_OPTIONS, PROPERTY_TYPE_OPTIONS, TIMELINE_OPTIONS } from "../../utils/leadOptions";
+import {
+  CITY_OPTIONS,
+  PROPERTY_TYPE_OPTIONS,
+  TIMELINE_OPTIONS,
+} from "../../utils/leadOptions";
 import { MdClear } from "react-icons/md";
 import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 import { bhkToLabel, timelineToLabel } from "../../utils/map";
@@ -64,11 +78,16 @@ export default function BuyersTable() {
     search: searchParams.get("search") || "",
   });
   const [pageSize, setPageSize] = useState(10);
-  const [sort, setSort] = useState<{ field: string | null; direction: "asc" | "desc" | null }>({
+  const [sort, setSort] = useState<{
+    field: string | null;
+    direction: "asc" | "desc" | null;
+  }>({
     field: "updatedAt",
     direction: "desc",
   });
-  const [visibleColumns, setVisibleColumns] = useState(ALL_COLUMNS.map((col) => col.key));
+  const [visibleColumns, setVisibleColumns] = useState(
+    ALL_COLUMNS.map((col) => col.key)
+  );
 
   useEffect(() => {
     const params = new URLSearchParams({ ...filters, page: String(page) });
@@ -78,7 +97,13 @@ export default function BuyersTable() {
   const fetchBuyers = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/buyers?${new URLSearchParams({ ...filters, page: String(page), pageSize: String(pageSize) })}`);
+      const res = await fetch(
+        `/api/buyers?${new URLSearchParams({
+          ...filters,
+          page: String(page),
+          pageSize: String(pageSize),
+        })}`
+      );
       const data = await res.json();
       setBuyers(data.buyers || []);
       setTotal(data.total || 0);
@@ -126,7 +151,9 @@ export default function BuyersTable() {
       bValue = "";
     }
     if (typeof aValue === "string" && typeof bValue === "string") {
-      return direction === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+      return direction === "asc"
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
     }
     if (typeof aValue === "number" && typeof bValue === "number") {
       return direction === "asc" ? aValue - bValue : bValue - aValue;
@@ -165,7 +192,9 @@ export default function BuyersTable() {
   });
 
   const { userId: loggedInUserId, user, token } = useUser();
-  const [statusUpdating, setStatusUpdating] = useReactState<string | null>(null);
+  const [statusUpdating, setStatusUpdating] = useReactState<string | null>(
+    null
+  );
   const handleStatusChange = async (buyerId: string, newStatus: string) => {
     setStatusUpdating(buyerId);
     try {
@@ -186,7 +215,13 @@ export default function BuyersTable() {
       setStatusUpdating(null);
     }
     setLoading(true);
-    fetch(`/api/buyers?${new URLSearchParams({ ...filters, page: String(page), pageSize: String(pageSize) })}`)
+    fetch(
+      `/api/buyers?${new URLSearchParams({
+        ...filters,
+        page: String(page),
+        pageSize: String(pageSize),
+      })}`
+    )
       .then((res) => res.json())
       .then((data) => {
         setBuyers(data.buyers || []);
@@ -194,6 +229,10 @@ export default function BuyersTable() {
         setLoading(false);
       });
   };
+
+  useEffect(() => {
+    reset({ search: filters.search });
+  }, [filters.search, reset]);
 
   if (!token) {
     return <AuthBoundary loading={loading} />;
@@ -218,7 +257,12 @@ export default function BuyersTable() {
   return (
     <div className="pb-20">
       <Group mb="md" gap="md" wrap="wrap" align="end">
-        <form onSubmit={handleSubmit((data) => setFilters((f) => ({ ...f, search: data.search })))} className="flex flex-row items-end gap-2">
+        <form
+          onSubmit={handleSubmit((data) =>
+            setFilters((f) => ({ ...f, search: data.search }))
+          )}
+          className="flex flex-row items-end gap-2"
+        >
           <Controller
             name="search"
             control={control}
@@ -229,7 +273,13 @@ export default function BuyersTable() {
                 placeholder="Name, Phone, Email"
                 {...field}
                 variant="filled"
-                rightSection={<MdClear className="cursor-pointer" onClick={() => field.onChange("")} size={16} />}
+                rightSection={
+                  <MdClear
+                    className="cursor-pointer"
+                    onClick={() => field.onChange("")}
+                    size={16}
+                  />
+                }
               />
             )}
           />
@@ -248,7 +298,7 @@ export default function BuyersTable() {
           label="City"
           placeholder="Select city"
           data={CITY_OPTIONS}
-          value={filters.city}
+          value={filters.city || null}
           onChange={(v) => setFilters((f) => ({ ...f, city: v || "" }))}
           clearable
           variant="filled"
@@ -257,7 +307,7 @@ export default function BuyersTable() {
           label="Property Type"
           placeholder="Select property type"
           data={PROPERTY_TYPE_OPTIONS}
-          value={filters.propertyType}
+          value={filters.propertyType || null}
           onChange={(v) => setFilters((f) => ({ ...f, propertyType: v || "" }))}
           variant="filled"
           clearable
@@ -266,7 +316,7 @@ export default function BuyersTable() {
           label="Status"
           placeholder="Select status"
           data={STATUS_OPTIONS}
-          value={filters.status}
+          value={filters.status || null}
           onChange={(v) => setFilters((f) => ({ ...f, status: v || "" }))}
           variant="filled"
           clearable
@@ -275,7 +325,7 @@ export default function BuyersTable() {
           label="Timeline"
           placeholder="Select timeline"
           data={TIMELINE_OPTIONS}
-          value={filters.timeline}
+          value={filters.timeline || null}
           onChange={(v) => setFilters((f) => ({ ...f, timeline: v || "" }))}
           variant="filled"
           clearable
@@ -292,17 +342,32 @@ export default function BuyersTable() {
 
         <Button
           onClick={() => {
-            setFilters({ city: "", propertyType: "", status: "", timeline: "", search: "" });
+            setFilters({
+              city: "",
+              propertyType: "",
+              status: "",
+              timeline: "",
+              search: "",
+            });
             reset();
           }}
           variant="light"
           color="red"
           leftSection={<MdClear size={14} />}
-          disabled={!filters.city && !filters.propertyType && !filters.status && !filters.timeline}
+          disabled={
+            !filters.city &&
+            !filters.propertyType &&
+            !filters.status &&
+            !filters.timeline &&
+            !filters.search.trim()
+          }
         >
           Clear Filters
         </Button>
-        <BuyersImportExport filters={{ ...filters, pageSize }} onImport={fetchBuyers} />
+        <BuyersImportExport
+          filters={{ ...filters, pageSize }}
+          onImport={fetchBuyers}
+        />
       </Group>
       {loading ? (
         <div className="flex justify-center py-10">
@@ -320,10 +385,29 @@ export default function BuyersTable() {
                 <Table.Th>ID</Table.Th>
                 {ALL_COLUMNS.map((col) =>
                   visibleColumns.includes(col.key) ? (
-                    <Table.Th key={col.key} onClick={() => handleSort(col.key)} style={{ cursor: "pointer" }} className="select-none">
-                      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                    <Table.Th
+                      key={col.key}
+                      onClick={() => handleSort(col.key)}
+                      style={{ cursor: "pointer" }}
+                      className="select-none"
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                        }}
+                      >
                         {col.label}
-                        {sort.field === col.key ? sort.direction === "asc" ? <FaSortUp /> : <FaSortDown /> : <FaSort />}
+                        {sort.field === col.key ? (
+                          sort.direction === "asc" ? (
+                            <FaSortUp />
+                          ) : (
+                            <FaSortDown />
+                          )
+                        ) : (
+                          <FaSort />
+                        )}
                       </div>
                     </Table.Th>
                   ) : null
@@ -335,7 +419,7 @@ export default function BuyersTable() {
             <Table.Tbody>
               {sortedBuyers.map((buyer: any, index: number) => (
                 <Table.Tr key={buyer.id}>
-                  <Table.Td>{index}</Table.Td>
+                  <Table.Td>{buyer.id}</Table.Td>
                   {ALL_COLUMNS.map((col) =>
                     visibleColumns.includes(col.key) ? (
                       <Table.Td key={col.key}>
@@ -347,12 +431,17 @@ export default function BuyersTable() {
                           timelineToLabel(buyer.timeline)
                         ) : col.key === "status" ? (
                           <div>
-                            <Badge color={statusColors[buyer.status]}>{buyer.status}</Badge>
-                            {(user?.role === "ADMIN" || buyer.creatorId == loggedInUserId) && (
+                            <Badge color={statusColors[buyer.status]}>
+                              {buyer.status}
+                            </Badge>
+                            {(user?.role === "ADMIN" ||
+                              buyer.creatorId == loggedInUserId) && (
                               <Select
                                 value={buyer.status}
                                 data={STATUS_OPTIONS}
-                                onChange={(v) => v && handleStatusChange(buyer.id, v)}
+                                onChange={(v) =>
+                                  v && handleStatusChange(buyer.id, v)
+                                }
                                 disabled={statusUpdating === buyer.id}
                                 size="xs"
                                 style={{ minWidth: 120 }}
@@ -371,8 +460,17 @@ export default function BuyersTable() {
                   )}
                   <Table.Td>
                     <Group gap="xs">
-                      <Button size="xs" variant="filled" color="violet" component="a" href={`/buyers/${buyer.id}`}>
-                        {buyer.creatorId == loggedInUserId || user?.role === "ADMIN" ? "View / Edit" : "View"}
+                      <Button
+                        size="xs"
+                        variant="filled"
+                        color="violet"
+                        component="a"
+                        href={`/buyers/${buyer.id}`}
+                      >
+                        {buyer.creatorId == loggedInUserId ||
+                        user?.role === "ADMIN"
+                          ? "View / Edit"
+                          : "View"}
                       </Button>
                     </Group>
                   </Table.Td>
@@ -383,7 +481,11 @@ export default function BuyersTable() {
         </div>
       )}
       <div className="w-full flex flex-row items-end justify-between px-4 md:space-y-0 fixed bottom-0 left-0 py-1 shadow-md backdrop-blur-lg">
-        <Pagination value={page} onChange={setPage} total={Math.ceil(total / pageSize)} />
+        <Pagination
+          value={page}
+          onChange={setPage}
+          total={Math.ceil(total / pageSize)}
+        />
         <Select
           // label="Page Size"
           data={[
